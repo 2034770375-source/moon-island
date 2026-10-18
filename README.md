@@ -8,4 +8,4 @@
 
 ## 在线访问
 
-通过 GitHub Pages 发布。
+<https://2034770375-source.github.io/moon-island/>
