@@ -1,0 +1,2149 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>月亮岛 · 高保真交互原型</title>
+<link rel="stylesheet" href="styles.css">
+<style id="tabbar-fix">
+  body[data-theme="light"] .tabbar { background: #eef2ff !important; }
+  /* v8：这段兜底原来把白天模式的标签栏压成蓝灰，现在跟着图标金黄系统走令牌 */
+  body[data-theme="light"] .tabbar .tab { color: var(--icon) !important; }
+  body[data-theme="light"] .tabbar .tab.is-active { color: var(--icon) !important; }
+  body[data-theme="light"] .tabbar .tab.is-active svg { color: var(--icon) !important; }
+  body[data-theme="light"] .tabbar .tab.is-active::after { background: var(--icon) !important; }
+</style>
+</head>
+<body data-intensity="glow" data-mode="teen" data-font="1" data-contrast="off" data-motion="on">
+
+<!-- ============ 图标 sprite ============ -->
+<svg class="sprite" aria-hidden="true" focusable="false">
+  <defs>
+    <g id="i-home"><path d="M3 10.6 12 3.5l9 7.1"/><path d="M5.4 9.4V20h13.2V9.4"/><path d="M9.6 20v-5.4h4.8V20"/></g>
+    <g id="i-planet"><circle cx="12" cy="12" r="4.6"/><ellipse cx="12" cy="12" rx="10" ry="3.8" transform="rotate(-22 12 12)"/></g>
+    <g id="i-story"><path d="M4 4.6h5.6A3 3 0 0 1 12 7.6V20a2.6 2.6 0 0 0-2.6-2.6H4z"/><path d="M20 4.6h-5.6A3 3 0 0 0 12 7.6V20a2.6 2.6 0 0 1 2.6-2.6H20z"/></g>
+    <g id="i-learn"><path d="M12 3.4 2.6 8.2 12 13l9.4-4.8z"/><path d="M6.4 10.2v4.9c0 1.7 2.5 3 5.6 3s5.6-1.3 5.6-3v-4.9"/></g>
+    <g id="i-mine"><circle cx="12" cy="8.2" r="3.9"/><path d="M4.6 20.5c0-4 3.3-6.6 7.4-6.6s7.4 2.6 7.4 6.6"/></g>
+    <g id="i-uv"><circle cx="12" cy="12" r="4"/><path d="M12 2.4v2.2M12 19.4v2.2M2.4 12h2.2M19.4 12h2.2M5.2 5.2l1.6 1.6M17.2 17.2l1.6 1.6M18.8 5.2l-1.6 1.6M6.8 17.2l-1.6 1.6"/></g>
+    <g id="i-moon"><path d="M20.4 14.6A8.8 8.8 0 1 1 9.6 3.6a7 7 0 0 0 10.8 11z"/></g>
+    <g id="i-star"><path d="M12 3.2l2.5 5.5 6 .8-4.4 4.2 1.1 6L12 16.9l-5.2 2.8 1.1-6L3.5 9.5l6-.8z"/></g>
+    <g id="i-task"><path d="M4 6.6l1.9 1.9L9.4 5"/><path d="M4 16.6l1.9 1.9L9.4 15"/><path d="M12.4 7.4h7.4M12.4 17.4h7.4"/></g>
+    <g id="i-bell"><path d="M6.6 9.8a5.4 5.4 0 1 1 10.8 0c0 4.4 1.8 5.4 1.8 5.4H4.8s1.8-1 1.8-5.4z"/><path d="M10 18.8a2 2 0 0 0 4 0"/><path fill="currentColor" stroke="none" d="M15 11.2A3 3 0 1 1 11.3 7.4a2.4 2.4 0 0 0 3.7 3.7z"/></g>
+    <g id="i-play"><path d="M8.4 5.6v12.8L19 12z"/></g>
+    <g id="i-chev"><path d="M9.2 5.4 15.8 12l-6.6 6.6"/></g>
+    <g id="i-lock"><rect x="4.4" y="10" width="15.2" height="9.6" rx="2.4"/><path d="M8 10V7.4a4 4 0 0 1 8 0V10"/></g>
+    <g id="i-shield"><path d="M12 3.2 20 6v6c0 4.8-3.4 8.2-8 9.4-4.6-1.2-8-4.6-8-9.4V6z"/><path d="M9 12.2l2.1 2.1 4-4.2"/></g>
+    <g id="i-heart"><path d="M12 20s-8.6-5.4-8.6-11A4.6 4.6 0 0 1 12 6.4a4.6 4.6 0 0 1 8.6 2.6C20.6 14.6 12 20 12 20z"/></g>
+    <g id="i-eye"><path d="M2.4 12S6.2 6.2 12 6.2 21.6 12 21.6 12 17.8 17.8 12 17.8 2.4 12 2.4 12z"/><circle cx="12" cy="12" r="2.6"/></g>
+    <g id="i-gear"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.6v3M12 18.4v3M2.6 12h3M18.4 12h3M5.4 5.4l2.1 2.1M16.5 16.5l2.1 2.1M18.6 5.4l-2.1 2.1M7.5 16.5l-2.1 2.1"/></g>
+    <g id="i-info"><circle cx="12" cy="12" r="8.8"/><path d="M12 11.4v5.4"/><path d="M12 7.7v.2" stroke-width="2.4"/></g>
+    <g id="i-moon-chat"><path d="M19.6 13.4A7.6 7.6 0 1 1 9.8 3.6a6 6 0 0 0 9.8 9.8z"/><path d="M7.4 16.2 4.6 21.4l5.2-2.4"/></g>
+    <g id="i-child"><circle cx="12" cy="8.6" r="3.6"/><path d="M5.6 20c.9-3.5 3.3-5.4 6.4-5.4s5.5 1.9 6.4 5.4"/></g>
+    <g id="i-search"><circle cx="10.4" cy="10.4" r="6.4"/><path d="M15.2 15.2 20.8 20.8"/><path fill="currentColor" stroke="none" d="M14.2 11.2A4 4 0 1 1 9.3 6.3a3.2 3.2 0 0 0 4.9 4.9z"/></g>
+    <g id="i-mic"><rect x="9.2" y="3" width="5.6" height="10.6" rx="2.8"/><path d="M5.6 11.4a6.4 6.4 0 0 0 12.8 0M12 18v3"/></g>
+    <g id="i-sparkle"><path d="M12 3.4l1.6 5 5 1.6-5 1.6-1.6 5-1.6-5-5-1.6 5-1.6z"/></g>
+    <g id="i-plus"><path d="M12 5.6v12.8M5.6 12h12.8"/></g>
+    <g id="i-check"><path d="M5 12.6 9.6 17.2 19 7.6"/></g>
+    <g id="i-send"><path d="M20.6 3.4 3.4 10.2l6.2 2.6 2.6 6.2z"/><path d="M20.6 3.4 9.6 12.8"/></g>
+    <g id="i-island"><path d="M20 14.8A8.4 8.4 0 1 1 9.4 4.4a6.6 6.6 0 0 0 10.6 10.4z"/><path fill="currentColor" stroke="none" d="M12.2 9.4l.8 1.7 1.9.3-1.4 1.3.4 2-1.7-1-1.7 1 .4-2-1.4-1.3 1.9-.3z"/></g>
+    <g id="i-compass"><circle cx="12" cy="12" r="8.8"/><path d="M15.4 8.6l-2 5-5 2 2-5z"/></g>
+    <g id="i-badge"><circle cx="12" cy="9.2" r="5.2"/><path d="M8.6 13.6 7 21l5-2.4L17 21l-1.6-7.4"/></g>
+    <g id="i-school"><path d="M3.4 9.8 12 4.4l8.6 5.4"/><path d="M5.6 11.6v7.8h12.8v-7.8"/><path d="M10 19.4v-4.6h4v4.6"/></g>
+  </defs>
+</svg>
+
+<div class="stage">
+
+  <!-- ============ 手机 ============ -->
+  <div class="phone" id="phone" role="application" aria-label="月亮岛 App 原型">
+    <canvas class="starfield" id="starfield" aria-hidden="true"></canvas>
+    <div class="nebula nebula--violet" aria-hidden="true"></div>
+    <div class="nebula nebula--teal" aria-hidden="true"></div>
+    <div class="nebula nebula--rose" aria-hidden="true"></div>
+
+    <div class="phone__body">
+
+      <!-- 状态栏 -->
+      <div class="statusbar" aria-hidden="true">
+        <span>21:40</span>
+        <span class="statusbar__right">
+          <span class="bars"><i></i><i></i><i></i></span> 5G <span class="battery"></span>
+        </span>
+      </div>
+
+      <!-- 顶栏 -->
+      <div class="topbar">
+        <div class="topbar__title">
+          <div class="brand">月亮岛</div>
+          <div class="crumb" id="crumb">今日</div>
+        </div>
+        <div class="topbar__tools">
+          <button class="iconbtn iconbtn--pill" data-screen-jump="search" aria-label="搜索" title="搜索">
+            <svg viewBox="0 0 24 24"><use href="#i-search"/></svg>
+            <span class="iconbtn__text">搜索</span>
+          </button>
+          <button class="iconbtn iconbtn--pill" id="btn-notify" data-open="notify" aria-label="消息通知" title="消息通知">
+            <svg viewBox="0 0 24 24"><use href="#i-bell"/></svg>
+            <span class="iconbtn__text">通知</span>
+            <span class="iconbtn__dot"></span>
+          </button>
+          <button class="iconbtn iconbtn--role" id="btn-role" aria-label="切换身份：岛内人 / 岛外人" title="身份：岛内人 / 岛外人">
+            <svg viewBox="0 0 24 24"><use href="#i-island"/></svg>
+            <span class="iconbtn__text" id="role-text">岛内人</span>
+          </button>
+          <button class="iconbtn iconbtn--ghost" id="btn-help" aria-label="设计说明" title="设计说明">
+            <svg viewBox="0 0 24 24"><use href="#i-info"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- 启动页 · 一句话说清是什么 + 选身份 -->
+      <div class="splash" id="splash">
+        <figure class="photo photo--hero" data-label="插画 · 月亮上的兔子和月亮宝宝">
+          <img data-slot="splash-hero" src="assets/ill-splash.jpg" alt="粉紫色暮色里的弯月，坐在月亮上的白兔和银白头发的小孩一起望向远处">
+        </figure>
+        <h1 class="splash__title">月亮岛</h1>
+        <p class="splash__lead">给月亮天使们的日常</p>
+        <p class="splash__subtitle">把防晒、心情和故事，都安放在月亮上</p>
+        <div class="splash__cards">
+          <button class="splash__card splash__card--insider" data-role-select="insider">
+            <span class="splash__card-body">
+              <b>我是岛内人</b>
+              <small>我或我的孩子有白化病</small>
+            </span>
+            <span class="splash__card-arrow">›</span>
+          </button>
+          <button class="splash__card splash__card--visitor" data-role-select="visitor">
+            <span class="splash__card-body">
+              <b>我是来了解的</b>
+              <small>同学、老师、朋友，或刚好路过</small>
+            </span>
+            <span class="splash__card-arrow">›</span>
+          </button>
+        </div>
+        <p class="splash__foot">选完随时能在顶栏切换 · <span id="splash-theme">试试白天模式</span></p>
+      </div>
+
+      <!-- 新手引导 · 3 页，一页一张图一句话 -->
+      <div class="onboarding" id="onboarding" aria-hidden="true">
+        <div class="onboarding__track" id="onboarding-track">
+          <div class="onboarding__page">
+        <figure class="photo photo--onboard" data-label="插画 · 戴滤光镜的兔子与弯月">
+              <img data-slot="onboard-1" src="assets/ill-onboard-1.jpg" alt="漂浮在云上的教室，桌上放着宽檐帽和滤光镜，戴滤光镜的兔子坐在弯月上">
+            </figure>
+            <h2 class="onboarding__title">一座月亮的岛</h2>
+            <p class="onboarding__desc">这里是晒不晒得到太阳，<br>都要好好发光的地方。</p>
+          </div>
+          <div class="onboarding__page">
+        <figure class="photo photo--onboard" data-label="插画 · 月亮宝宝和好朋友">
+              <img data-slot="onboard-2" src="assets/ill-onboard-2.jpg" alt="浅色走廊里，银白头发的小孩和深色头发的小孩并肩望向尽头发光的门">
+            </figure>
+            <h2 class="onboarding__title">岛上的人</h2>
+            <p class="onboarding__desc">岛上的人互相照亮，<br>岛外的人学着轻轻走近。</p>
+          </div>
+          <div class="onboarding__page">
+        <figure class="photo photo--onboard" data-label="插画 · 弯月、星星罐与卡片">
+              <img data-slot="onboard-3" src="assets/ill-onboard-3.jpg" alt="床头柜上发光的玻璃罐里装满折纸星星，半空浮着一张画着星星的卡片">
+            </figure>
+            <h2 class="onboarding__title">把日子过成光</h2>
+            <p class="onboarding__desc">记一记心情、听一听故事，<br>送出一颗星，日子就有了光。</p>
+            <button class="onboarding__start" id="onboarding-start">开始探索</button>
+          </div>
+        </div>
+        <!-- 指示器 -->
+        <div class="onboarding__dots" id="onboarding-dots">
+          <span class="is-active"></span><span></span><span></span>
+        </div>
+        <!-- 跳过按钮 -->
+        <button class="onboarding__skip" id="onboarding-skip">跳过</button>
+        <!-- 左右按钮 -->
+        <button class="onboarding__nav onboarding__nav--prev" id="onboarding-prev" aria-label="上一页">‹</button>
+        <button class="onboarding__nav onboarding__nav--next" id="onboarding-next" aria-label="下一页">›</button>
+      </div>
+
+      <!-- 屏幕 -->
+      <main class="screens" id="screens">
+
+        <!-- ===================== ① 今日 ===================== -->
+        <section class="screen is-active" data-screen="today" aria-label="今日">
+          <div class="scroll">
+            <p class="greet">晚上好<small>9 月 10 日 · 上弦月</small></p>
+
+            <!-- 主行动：一张图 + 一句话 + 一个动作 -->
+            <article class="focuscard">
+              <span class="focuscard__kicker">今天最该做的一件事</span>
+              <figure class="photo photo--card" data-label="插画 · 戴着帽子出门的月亮兔">
+                <img data-slot="today-focus" src="assets/ill-focus.jpg" alt="清晨窗边，戴宽檐帽和滤光镜的孩子把防晒霜放进布包">
+              </figure>
+              <div class="focuscard__body">
+                <h2 class="focuscard__title">出门前戴好帽子和滤光镜</h2>
+                <div class="focuscard__row">
+                  <button class="primary-btn" id="focus-done" aria-label="我做好了：出门前戴好帽子和滤光镜"><svg viewBox="0 0 24 24"><use href="#i-check"/></svg><span>我做好了</span></button>
+                  <button class="ghost-btn" data-screen-jump="lesson-sun" aria-label="防晒怎么做：打开第 3 课 日常防晒"><svg viewBox="0 0 24 24"><use href="#i-learn"/></svg>防晒怎么做</button>
+                </div>
+              </div>
+            </article>
+
+            <!-- 今天的光：数字换成光柱 -->
+            <article class="card card--uv" data-open="uv" tabindex="0" role="button" aria-label="紫外线与防晒，打开详情">
+              <div class="card__head">
+                <h2>今天的光</h2>
+                <span class="uv__level">8.2 · 极强</span>
+              </div>
+              <div class="lightbar" role="img"
+                   aria-label="紫外线指数，0 到 10 刻度：8 时 2，10 时 3，12 时 5，14 时 8.2，16 时 6，18 时 4，20 时 2。">
+                <span class="lbcol"><b>2</b><i style="--h:20%"></i><em>8时</em></span>
+                <span class="lbcol"><b>3</b><i style="--h:30%"></i><em>10时</em></span>
+                <span class="lbcol"><b>5</b><i style="--h:50%"></i><em>12时</em></span>
+                <span class="lbcol is-now"><b>8.2</b><i style="--h:82%" class="is-now"></i><em>14时</em></span>
+                <span class="lbcol"><b>6</b><i style="--h:60%"></i><em>16时</em></span>
+                <span class="lbcol"><b>4</b><i style="--h:40%"></i><em>18时</em></span>
+                <span class="lbcol"><b>2</b><i style="--h:20%"></i><em>20时</em></span>
+              </div>
+              <p class="lightbar__note">数值＝紫外线指数（0–10 刻度）</p>
+              <p class="card__short">11:00-16:00 尽量待在室内。已涂防晒，1 小时后补。</p>
+            </article>
+
+            <!-- 月相心情 -->
+            <article class="card card--moon" data-open="moon" tabindex="0" role="button" aria-label="月相心情打卡">
+              <div class="card__head">
+                <h2>今天的心情像哪轮月亮</h2>
+                <span class="card__go"><svg viewBox="0 0 24 24"><use href="#i-chev"/></svg></span>
+              </div>
+              <div class="phases" id="today-phases" role="radiogroup" aria-label="选择月相"></div>
+              <p class="card__note" id="today-moon-note">上弦月 · 有点亮，也有点没准备好</p>
+            </article>
+
+            <!-- 今日任务 -->
+            <article class="card">
+              <div class="card__head"><h2>今天的三件小事</h2><span class="tagnum" id="task-count">1 / 3</span></div>
+              <ul class="tasks" id="task-list">
+                <li class="task is-done"><span class="tick"><svg viewBox="0 0 24 24"><use href="#i-check"/></svg></span>涂好防晒霜</li>
+                <li class="task"><span class="tick"></span>戴上滤光镜</li>
+                <li class="task"><span class="tick"></span>睡前记一句话</li>
+              </ul>
+              <p class="card__note">断掉也没关系，月亮缺一角也还是月亮。</p>
+            </article>
+
+            <!-- 进度与复查：合并成两张小卡 -->
+            <div class="duo">
+              <article class="card card--mini">
+                <span class="mini__k">连续守护</span>
+                <b class="mini__v">12 天</b>
+                <div class="minibar"><i style="--w:62%"></i></div>
+                <span class="mini__s" id="today-stars">48 颗星</span>
+              </article>
+              <article class="card card--mini">
+                <span class="mini__k">复查提醒</span>
+                <b class="mini__v">3 天后</b>
+                <p class="mini__s">9 月 13 日 皮肤科随访</p>
+              </article>
+            </div>
+
+            <div class="scroll__pad"></div>
+          </div>
+        </section>
+
+        <!-- ===================== ② 星球 ===================== -->
+        <section class="screen" data-screen="planet" aria-label="星球">
+          <div class="segmented" role="tablist" aria-label="星球分区">
+            <button class="seg is-active" role="tab" data-seg="wall">打气墙</button>
+            <button class="seg" role="tab" data-seg="square">心情广场</button>
+            <button class="seg" role="tab" data-seg="room">夜谈室</button>
+          </div>
+          <div class="scroll">
+
+            <div class="segview is-active" data-segview="wall">
+              <div class="notice notice--public">
+                <svg viewBox="0 0 24 24"><use href="#i-eye"/></svg>
+                <p><b>公开区</b> · 这里不开放评论，只送星。身体的解释权，先留给自己。</p>
+              </div>
+              <div class="notice notice--visitor only-visitor">
+                <svg viewBox="0 0 24 24"><use href="#i-island"/></svg>
+                <p><b>岛外人也在这里</b> · 你可以读、可以送星，但不会看到谁在生病、谁在住院。这里只放他们愿意公开的那部分。</p>
+              </div>
+              <article class="cheer">
+                <figure class="photo photo--wide" data-label="照片 · 大海与沙滩">
+                  <img data-slot="cheer-sea" src="assets/cheer-sea.jpg" alt="傍晚海边，戴宽檐草帽的背影站在沙滩上，风把长袖外套下摆吹起">
+                </figure>
+                <p class="cheer__text">今天第一次戴着帽子去了海边。风很大，沙子硌脚，但我在。</p>
+                <p class="cheer__meta">来自 云层以上 · 3 小时前</p>
+                <div class="cheer__foot">
+                  <button class="sendstar" data-starname="云层以上"><svg viewBox="0 0 24 24"><use href="#i-star"/></svg>送一颗星 <b>128</b></button>
+                  <button class="cheer__reply" data-screen-jump="post-detail" aria-label="看精选回应"><svg viewBox="0 0 24 24"><use href="#i-eye"/></svg></button>
+                </div>
+              </article>
+              <article class="cheer">
+                <figure class="photo photo--wide" data-label="照片 · 阳光洒进医院走廊">
+                  <img data-slot="cheer-hospital" src="assets/cheer-hospital.jpg" alt="阳光铺满浅色走廊，长椅上放着一顶宽檐帽和叠好的长袖外套">
+                </figure>
+                <p class="cheer__text">复诊结果一切正常。这次没有哭。</p>
+                <p class="cheer__meta">来自 小夜灯 · 昨天</p>
+                <div class="cheer__foot">
+                  <button class="sendstar" data-starname="小夜灯"><svg viewBox="0 0 24 24"><use href="#i-star"/></svg>送一颗星 <b>96</b></button>
+                  <button class="cheer__reply" data-screen-jump="post-detail" aria-label="看精选回应"><svg viewBox="0 0 24 24"><use href="#i-eye"/></svg></button>
+                </div>
+              </article>
+              <article class="cheer">
+                <figure class="photo photo--wide" data-label="照片 · 手拉教室窗帘">
+                  <img data-slot="cheer-curtain" src="assets/cheer-curtain.jpg" alt="一只手拉开教室遮光帘，粉白色光涌进来，桌上一副深色滤光镜">
+                </figure>
+                <p class="cheer__text">想对三年前的自己说：你后来交到了会主动帮你拉窗帘的朋友。</p>
+                <p class="cheer__meta">来自 半格光 · 2 天前</p>
+                <div class="cheer__foot">
+                  <button class="sendstar" data-starname="半格光"><svg viewBox="0 0 24 24"><use href="#i-star"/></svg>送一颗星 <b>241</b></button>
+                  <button class="cheer__reply" data-screen-jump="post-detail" aria-label="看精选回应"><svg viewBox="0 0 24 24"><use href="#i-eye"/></svg></button>
+                </div>
+              </article>
+              <button class="fab only-insider" data-screen-jump="compose-post" aria-label="写下我想说的话"><svg viewBox="0 0 24 24"><use href="#i-send"/></svg>写下我想说的话</button>
+              <p class="visitor-hint only-visitor">岛外人暂时不能在打气墙发帖。<br>先完成「认识它」这一课，就可以申请成为守护者。</p>
+            </div>
+
+            <div class="segview" data-segview="square">
+              <div class="only-insider">
+                <div class="notice notice--private">
+                  <svg viewBox="0 0 24 24"><use href="#i-lock"/></svg>
+                  <p><b>匿名 · 私密</b> · 不显示身份，24 小时后自动沉底。没有点赞，也没有比较。</p>
+                </div>
+                <div class="moodgrid">
+                  <!-- 每条心情的匿名回应就写在自己卡片里（hidden），详情页在运行时搬过去渲染：内容只有一份 -->
+                  <div class="mood" role="button" tabindex="0" data-mood-detail><span class="mood__phase" data-phase="5"></span><p>今天不想被看见，但想说一句：真的好累。</p><small>2 分钟前 · 2 句回应</small>
+                    <div class="mood__replies" hidden>
+                      <div class="reply"><span class="avatar"><svg viewBox="0 0 24 24"><use href="#i-moon"/></svg></span><div class="reply__body"><div class="reply__meta"><b>匿名</b><span>1 分钟前</span></div><p>我也是。今天只想缩在角落里。</p></div></div>
+                      <div class="reply"><span class="avatar"><svg viewBox="0 0 24 24"><use href="#i-moon"/></svg></span><div class="reply__body"><div class="reply__meta"><b>匿名</b><span>刚刚</span></div><p>不用被看见也可以。我在这儿。</p></div></div>
+                    </div>
+                  </div>
+                  <div class="mood" role="button" tabindex="0" data-mood-detail><span class="mood__phase" data-phase="2"></span><p>有人愿意和我换座位吗，我怕窗边。</p><small>18 分钟前 · 2 句回应</small>
+                    <div class="mood__replies" hidden>
+                      <div class="reply"><span class="avatar"><svg viewBox="0 0 24 24"><use href="#i-moon"/></svg></span><div class="reply__body"><div class="reply__meta"><b>匿名</b><span>12 分钟前</span></div><p>我也怕窗边，后来换到了靠墙的位置。</p></div></div>
+                      <div class="reply"><span class="avatar"><svg viewBox="0 0 24 24"><use href="#i-moon"/></svg></span><div class="reply__body"><div class="reply__meta"><b>匿名</b><span>5 分钟前</span></div><p>我们班也有人换过，老师没多问。</p></div></div>
+                    </div>
+                  </div>
+                  <div class="mood" role="button" tabindex="0" data-mood-detail><span class="mood__phase" data-phase="4"></span><p>今天没人问我眼睛为什么这样。就很开心。</p><small>1 小时前 · 3 句回应</small>
+                    <div class="mood__replies" hidden>
+                      <div class="reply"><span class="avatar"><svg viewBox="0 0 24 24"><use href="#i-moon"/></svg></span><div class="reply__body"><div class="reply__meta"><b>匿名</b><span>48 分钟前</span></div><p>这种日子值得记下来。</p></div></div>
+                      <div class="reply"><span class="avatar"><svg viewBox="0 0 24 24"><use href="#i-moon"/></svg></span><div class="reply__body"><div class="reply__meta"><b>匿名</b><span>30 分钟前</span></div><p>我今天的月亮也是满的。</p></div></div>
+                      <div class="reply"><span class="avatar"><svg viewBox="0 0 24 24"><use href="#i-moon"/></svg></span><div class="reply__body"><div class="reply__meta"><b>匿名</b><span>12 分钟前</span></div><p>希望明天也没有人问。</p></div></div>
+                    </div>
+                  </div>
+                  <div class="mood" role="button" tabindex="0" data-mood-detail><span class="mood__phase" data-phase="1"></span><p>妈妈说我越来越会照顾自己了。</p><small>3 小时前 · 2 句回应</small>
+                    <div class="mood__replies" hidden>
+                      <div class="reply"><span class="avatar"><svg viewBox="0 0 24 24"><use href="#i-moon"/></svg></span><div class="reply__body"><div class="reply__meta"><b>匿名</b><span>2 小时前</span></div><p>妈妈也是慢慢学会的。</p></div></div>
+                      <div class="reply"><span class="avatar"><svg viewBox="0 0 24 24"><use href="#i-moon"/></svg></span><div class="reply__body"><div class="reply__meta"><b>匿名</b><span>1 小时前</span></div><p>被这样说一次，能记很久。</p></div></div>
+                    </div>
+                  </div>
+                  <div class="mood" role="button" tabindex="0" data-mood-detail><span class="mood__phase" data-phase="3"></span><p>明天有体育课，我把帽子和长袖都准备好了。</p><small>5 小时前 · 3 句回应</small>
+                    <div class="mood__replies" hidden>
+                      <div class="reply"><span class="avatar"><svg viewBox="0 0 24 24"><use href="#i-moon"/></svg></span><div class="reply__body"><div class="reply__meta"><b>匿名</b><span>4 小时前</span></div><p>体育课最麻烦的就是太阳。</p></div></div>
+                      <div class="reply"><span class="avatar"><svg viewBox="0 0 24 24"><use href="#i-moon"/></svg></span><div class="reply__body"><div class="reply__meta"><b>匿名</b><span>3 小时前</span></div><p>我也开始前一晚就把东西放好。</p></div></div>
+                      <div class="reply"><span class="avatar"><svg viewBox="0 0 24 24"><use href="#i-moon"/></svg></span><div class="reply__body"><div class="reply__meta"><b>匿名</b><span>1 小时前</span></div><p>我上周也这么准备，那天过得挺好。</p></div></div>
+                    </div>
+                  </div>
+                  <div class="mood" role="button" tabindex="0" data-mood-detail><span class="mood__phase" data-phase="0"></span><p>什么都没做的一天。也算过完了。</p><small>7 小时前 · 2 句回应</small>
+                    <div class="mood__replies" hidden>
+                      <div class="reply"><span class="avatar"><svg viewBox="0 0 24 24"><use href="#i-moon"/></svg></span><div class="reply__body"><div class="reply__meta"><b>匿名</b><span>6 小时前</span></div><p>什么都没做，也是一种休息。</p></div></div>
+                      <div class="reply"><span class="avatar"><svg viewBox="0 0 24 24"><use href="#i-moon"/></svg></span><div class="reply__body"><div class="reply__meta"><b>匿名</b><span>4 小时前</span></div><p>我今天也是这样过来的。</p></div></div>
+                    </div>
+                  </div>
+                  <div class="mood" role="button" tabindex="0" data-mood-detail><span class="mood__phase" data-phase="6"></span><p>这周有点撑不住，今晚决定早点睡。</p><small>9 小时前 · 3 句回应</small>
+                    <div class="mood__replies" hidden>
+                      <div class="reply"><span class="avatar"><svg viewBox="0 0 24 24"><use href="#i-moon"/></svg></span><div class="reply__body"><div class="reply__meta"><b>匿名</b><span>8 小时前</span></div><p>我这周也是。今晚一起早点关灯。</p></div></div>
+                      <div class="reply"><span class="avatar"><svg viewBox="0 0 24 24"><use href="#i-moon"/></svg></span><div class="reply__body"><div class="reply__meta"><b>匿名</b><span>5 小时前</span></div><p>我上周也这样，睡了一觉好多了。</p></div></div>
+                      <div class="reply"><span class="avatar"><svg viewBox="0 0 24 24"><use href="#i-moon"/></svg></span><div class="reply__body"><div class="reply__meta"><b>匿名</b><span>2 小时前</span></div><p>不用一直撑着，我们都在这儿。</p></div></div>
+                    </div>
+                  </div>
+                  <div class="mood" role="button" tabindex="0" data-mood-detail><span class="mood__phase" data-phase="4"></span><p>第一次自己坐公交回家，选到了不晒的那一边。</p><small>11 小时前 · 2 句回应</small>
+                    <div class="mood__replies" hidden>
+                      <div class="reply"><span class="avatar"><svg viewBox="0 0 24 24"><use href="#i-moon"/></svg></span><div class="reply__body"><div class="reply__meta"><b>匿名</b><span>10 小时前</span></div><p>恭喜！这一步不容易。</p></div></div>
+                      <div class="reply"><span class="avatar"><svg viewBox="0 0 24 24"><use href="#i-moon"/></svg></span><div class="reply__body"><div class="reply__meta"><b>匿名</b><span>6 小时前</span></div><p>我也在练着自己坐车。</p></div></div>
+                    </div>
+                  </div>
+                  <div class="mood" role="button" tabindex="0" data-mood-detail><span class="mood__phase" data-phase="7"></span><p>抽血的时候，护士姐姐说我的头发很好看。</p><small>昨天 · 3 句回应</small>
+                    <div class="mood__replies" hidden>
+                      <div class="reply"><span class="avatar"><svg viewBox="0 0 24 24"><use href="#i-moon"/></svg></span><div class="reply__body"><div class="reply__meta"><b>匿名</b><span>昨天 22:10</span></div><p>这样的护士真好。</p></div></div>
+                      <div class="reply"><span class="avatar"><svg viewBox="0 0 24 24"><use href="#i-moon"/></svg></span><div class="reply__body"><div class="reply__meta"><b>匿名</b><span>今天 07:40</span></div><p>我抽血的时候一直不敢看。</p></div></div>
+                      <div class="reply"><span class="avatar"><svg viewBox="0 0 24 24"><use href="#i-moon"/></svg></span><div class="reply__body"><div class="reply__meta"><b>匿名</b><span>今天 09:15</span></div><p>你的头发本来就很好看。</p></div></div>
+                    </div>
+                  </div>
+                </div>
+                <button class="fab" data-screen-jump="compose-mood" aria-label="匿名写一句"><svg viewBox="0 0 24 24"><use href="#i-send"/></svg>匿名写一句</button>
+              </div>
+              <div class="lockcard only-visitor">
+                <span class="lockcard__ico"><svg viewBox="0 0 24 24"><use href="#i-lock"/></svg></span>
+                <h3>心情广场只对岛内人开放</h3>
+                <p>这里是他们卸下解释的地方。你想了解的那种"真实的感受"，在「月亮故事 · 听 TA 说」里，他们愿意讲给你听。</p>
+                <button class="ghost-btn" data-screen-jump="story"><svg viewBox="0 0 24 24"><use href="#i-play"/></svg>去听他们的声音</button>
+              </div>
+            </div>
+
+            <div class="segview" data-segview="room">
+              <div class="notice notice--safe">
+                <svg viewBox="0 0 24 24"><use href="#i-shield"/></svg>
+                <p><b>不开放 1v1 私聊</b> · 房间由成年志愿者主持，全程有值班老师。未成年人的安全感比社交效率重要。</p>
+              </div>
+              <div class="notice notice--visitor only-visitor">
+                <svg viewBox="0 0 24 24"><use href="#i-island"/></svg>
+                <p><b>你先旁听</b> · 岛外人可以安静地听。想开口，需要先通过"守护者"培训。</p>
+              </div>
+              <div class="notice notice--rules" data-open="room-rules" role="button" tabindex="0" aria-label="查看房间守则">
+                <svg viewBox="0 0 24 24"><use href="#i-shield"/></svg>
+                <p><b>📜 房间守则</b> · 进入夜谈室前请先阅读，点击查看全部 8 条守则</p>
+              </div>
+              <article class="room" data-room="今晚聊学校">
+                <div class="room__top"><span class="room__live">进行中</span><h3>今晚聊学校</h3></div>
+                <p>下课时同学问的那些问题，我们一起去接。</p>
+                <div class="room__foot"><span>主持人 苏木（志愿者）</span><span>14 人在岛</span></div>
+              </article>
+              <article class="room" data-room="第一次戴滤光镜">
+                <div class="room__top"><span class="room__soon">20:30 开始</span><h3>第一次戴滤光镜</h3></div>
+                <p>怎么挑、怎么跟老师说、怎么不被盯着看。</p>
+                <div class="room__foot"><span>主持人 陆青（成年岛民）</span><span>即将开始</span></div>
+              </article>
+              <article class="room" data-room="睡不着的都进来">
+                <div class="room__top"><span class="room__soon">今晚 22:00</span><h3>睡不着的都进来</h3></div>
+                <p>关灯之后想不明白的那些事，先放在这里。</p>
+                <div class="room__foot"><span>主持人 阿橘（志愿者）</span><span>已预约 9 人</span></div>
+              </article>
+              <article class="room" data-room="家长也在学">
+                <div class="room__top"><span class="room__soon">明晚 19:00</span><h3>家长也在学</h3></div>
+                <p>守护者房间：怎么跟孩子谈"你和别人不太一样"。</p>
+                <div class="room__foot"><span>主持人 王医生</span><span>需守护者身份</span></div>
+              </article>
+              <article class="room" data-room="体育课怎么上">
+                <div class="room__top"><span class="room__soon">周三 19:30</span><h3>体育课怎么上</h3></div>
+                <p>怎么跟老师开口：我需要在阴凉的那一边。</p>
+                <div class="room__foot"><span>主持人 何老师（校医）</span><span>每周三固定</span></div>
+              </article>
+              <article class="room" data-room="给家长的十分钟">
+                <div class="room__top"><span class="room__soon">周六 15:00</span><h3>给家长的十分钟</h3></div>
+                <p>守护者房间：孩子不肯戴帽子的时候，怎么办。</p>
+                <div class="room__foot"><span>主持人 王医生</span><span>需守护者身份</span></div>
+              </article>
+              <article class="room" data-room="听见自己的声音">
+                <div class="room__top"><span class="room__soon">周日 20:00</span><h3>听见自己的声音</h3></div>
+                <p>一起读一位岛民公开写下的那篇日记。</p>
+                <div class="room__foot"><span>主持人 陆青（成年岛民）</span><span>可安静旁听</span></div>
+              </article>
+            </div>
+
+            <div class="scroll__pad"></div>
+          </div>
+        </section>
+
+        <!-- ===================== ③ 故事 ===================== -->
+        <section class="screen" data-screen="story" aria-label="故事">
+          <div class="scroll">
+            <article class="card card--energy">
+              <div class="card__head energy__head">
+                <h2 class="energy__title"><svg viewBox="0 0 24 24"><use href="#i-sparkle"/></svg>今日能量卡</h2>
+              </div>
+              <figure class="photo photo--energy" data-label="插画 · 发着光的月亮">
+                <img data-slot="story-energy" src="assets/ill-energy.jpg" alt="温柔的满月低悬在粉紫色云层上，几只发光的星星和云上的兔子剪影">
+              </figure>
+              <p class="energy__text">"你不需要变得不敏感，<br>你只需要遇到更温柔的光。"</p>
+              <button class="ghost-btn" data-read="你不需要变得不敏感，你只需要遇到更温柔的光。">
+                <svg viewBox="0 0 24 24"><use href="#i-play"/></svg>听一遍
+              </button>
+            </article>
+
+            <article class="card card--challenge">
+              <div class="card__head"><h2>🎯 每日挑战</h2><span class="tagnum">第 7 天</span></div>
+              <p class="challenge__text" id="challenge-text">今天试着对一个人说：<b>"我的眼睛怕光，不是怕你。"</b></p>
+              <div class="challenge__row">
+                <button class="primary-btn" id="challenge-done">✨ 我做到了</button>
+                <button class="ghost-btn" id="challenge-next">🔄 换一个</button>
+              </div>
+              <!-- 庆祝动画层 -->
+              <div class="celebrate" id="celebrate" aria-hidden="true">
+                <div class="celebrate__rabbit">🐰</div>
+                <div class="celebrate__text">太棒了！兔兔为你跳舞！</div>
+                <div class="celebrate__stars">
+                  <span>⭐</span><span>🌟</span><span>✨</span><span>💫</span><span>⭐</span>
+                </div>
+              </div>
+            </article>
+
+            <div class="cardhead"><h2>月亮故事 · 听 TA 说</h2><span class="cardhead__more">全部</span></div>
+            <article class="audio" data-read="我小时候以为，只有我一个人怕光。后来发现，是很多人都还没学会把灯调暗一点。">
+              <img class="audio__cover" data-slot="story-audio-1" src="assets/story-cover-1.jpg" alt="教室靠窗的座位，光在桌面上形成一块明亮光斑">
+              <button class="audio__play" aria-label="播放"><svg viewBox="0 0 24 24"><use href="#i-play"/></svg></button>
+              <div class="audio__body" data-screen-jump="story-detail">
+                <h3>我把教室的窗帘换成了遮光的</h3>
+                <p>17 岁 · 高二 · 4 分 12 秒</p>
+              </div>
+            </article>
+            <article class="audio" data-read="第一次有人说我的头发好看，我愣了一下。以前我只觉得它是麻烦。">
+              <img class="audio__cover" data-slot="story-audio-2" src="assets/story-cover-2.jpg" alt="银白色短发少女的侧脸，浅色睫毛与眉毛，闭着眼睛">
+              <button class="audio__play" aria-label="播放"><svg viewBox="0 0 24 24"><use href="#i-play"/></svg></button>
+              <div class="audio__body" data-screen-jump="story-detail">
+                <h3>我的白头发，是妈妈给的礼物</h3>
+                <p>13 岁 · 初一 · 3 分 08 秒</p>
+              </div>
+            </article>
+            <article class="audio" data-read="我爸以前不让我出门。现在我带着他一起看天气预报的紫外线指数。">
+              <img class="audio__cover" data-slot="story-audio-3" src="assets/story-cover-3.jpg" alt="海边一大一小两个戴宽檐帽的背影">
+              <button class="audio__play" aria-label="播放"><svg viewBox="0 0 24 24"><use href="#i-play"/></svg></button>
+              <div class="audio__body" data-screen-jump="story-detail">
+                <h3>我和我爸的防晒战</h3>
+                <p>20 岁 · 大一 · 5 分 40 秒</p>
+              </div>
+            </article>
+
+            <div class="cardhead"><h2>精选 · 本周被送出最多星星</h2></div>
+            <article class="rank" data-featured="0" role="button" tabindex="0" aria-label="打开精选文章">
+              <span class="rank__no">01</span>
+              <div><h3>我给妹妹做了一张"月亮卡"</h3><p>3,182 颗星 · 漫画</p></div>
+              <span class="rank__go">›</span>
+            </article>
+            <article class="rank" data-featured="1" role="button" tabindex="0" aria-label="打开精选文章">
+              <span class="rank__no">02</span>
+              <div><h3>白化病会不会越来越严重？</h3><p>2,470 颗星 · 科普</p></div>
+              <span class="rank__go">›</span>
+            </article>
+            <article class="rank" data-featured="2" role="button" tabindex="0" aria-label="打开精选文章">
+              <span class="rank__no">03</span>
+              <div><h3>在泳池边，我第一次脱下防晒衣</h3><p>1,905 颗星 · 音频</p></div>
+              <span class="rank__go">›</span>
+            </article>
+            <div class="scroll__pad"></div>
+          </div>
+        </section>
+
+        <!-- ===================== ④ 科普 ===================== -->
+        <section class="screen" data-screen="learn" aria-label="科普">
+          <div class="searchbar"><svg viewBox="0 0 24 24"><use href="#i-search"/></svg><span>搜索：会不会遗传 / 能不能晒太阳</span></div>
+          <div class="scroll">
+            <!-- 六个入口外面那层透明大外框底 -->
+            <div class="learn-panel">
+              <div class="learn-grid">
+                <div class="learncard" data-screen-jump="lesson-cause"><img class="learncard__thumb" data-slot="learn-entry-cause" src="assets/lessons/learn-entry-cause.jpg" alt="粉紫色虚空中悬浮着一条发光的双螺旋，螺旋上停着一只白色小兔子" loading="lazy"><h3>是什么 · 成因与遗传</h3><p>为什么会有白化病</p></div>
+                <div class="learncard" data-screen-jump="lesson-eye"><img class="learncard__thumb" data-slot="learn-entry-eye" src="assets/lessons/learn-entry-eye.jpg" alt="玻璃球里盛着一弯月亮，穿过球体的光在桌面留下柔和光晕" loading="lazy"><h3>眼睛与视力</h3><p>畏光、眼球震颤、低视力</p></div>
+                <div class="learncard" data-screen-jump="lesson-sun"><img class="learncard__thumb" data-slot="learn-entry-sun" src="assets/lessons/learn-entry-sun.jpg" alt="桌面上并排着宽檐草帽、叠好的长袖衣和一支无标签防晒霜" loading="lazy"><h3>日常防晒</h3><p>SPF、衣物与时间段</p></div>
+                <div class="learncard" data-screen-jump="lesson-talk"><img class="learncard__thumb" data-slot="learn-entry-talk" src="assets/lessons/learn-entry-talk.jpg" alt="一大一小两个透明对话气泡浮在半空，气泡里各有一颗发光的星" loading="lazy"><h3>怎么和别人说</h3><p>给同学、老师、HR 的话术</p></div>
+                <div class="learncard" data-screen-jump="lesson-family"><img class="learncard__thumb" data-slot="learn-entry-family" src="assets/lessons/learn-entry-family.jpg" alt="一大一小两个剪影并肩站在发光的窗前，中间浮着一颗星" loading="lazy"><h3>家属照护指南</h3><p>给守护者</p></div>
+                <div class="learncard learncard--followup" data-topic="复查与随访"><img class="learncard__thumb" data-slot="learn-entry-detail" src="assets/lessons/learn-entry-detail.jpg" alt="桌上放着一副深色滤光镜和一支防晒霜，镜片倒映粉彩天空" loading="lazy"><h3>去医院之前</h3><p>复查 · 带什么 · 问什么</p></div>
+              </div>
+            </div>
+
+            <article class="card card--map only-visitor" data-open="quiz" data-quiz="lesson-detail">
+              <div class="card__head">
+                <h2>岛外人的认知地图</h2>
+                <span class="tagnum tagnum--gold">4 / 9 课</span>
+              </div>
+              <p class="card__note">按顺序走完 9 课，你会知道怎么靠近一个人，而不是怎么打量一个人。</p>
+              <div class="mapbar"><i style="--w:44%"></i></div>
+              <ul class="maplist">
+                <li class="is-done"><svg viewBox="0 0 24 24"><use href="#i-check"/></svg>白化病是什么</li>
+                <li class="is-done"><svg viewBox="0 0 24 24"><use href="#i-check"/></svg>他们看得清吗</li>
+                <li class="is-done"><svg viewBox="0 0 24 24"><use href="#i-check"/></svg>为什么不能晒太阳</li>
+                <li><svg viewBox="0 0 24 24"><use href="#i-compass"/></svg>第一次见面可以说什么</li>
+              </ul>
+              <button class="primary-btn" data-screen-jump="lesson-detail">继续第 5 课 · 常见误解</button>
+            </article>
+
+            <div class="card card--myths">
+              <div class="card__head"><h2>谣言粉碎机</h2><button class="cardhead__more" id="myth-more">全部 6 条</button></div>
+              <ul class="myths" id="myth-list"></ul>
+            </div>
+
+            <div class="scroll__pad"></div>
+          </div>
+        </section>
+
+        <!-- ===================== ⑤ 我的 ===================== -->
+        <section class="screen" data-screen="mine" aria-label="我的">
+          <div class="scroll">
+            <article class="card card--visitor only-visitor">
+              <div class="visitorhead">
+                <span class="visitorhead__badge"><svg viewBox="0 0 24 24"><use href="#i-island"/></svg>岛外人</span>
+                <span class="tagnum tagnum--gold">了解进度 44%</span>
+              </div>
+              <h2 class="visitorhead__title">你正在成为一个可以被信赖的人</h2>
+              <div class="mapbar"><i style="--w:44%"></i></div>
+              <p class="card__note">已完成 4 / 9 课、听过 3 个故事、送出 27 颗星。走完 9 课并答对全部测验，就能拿到守护者徽章。</p>
+            </article>
+
+            <article class="card card--roomopen only-insider" data-open="room" tabindex="0" role="button" aria-label="月球兔小屋">
+              <div class="roomopen__text">
+                <span class="chip chip--plain"><svg viewBox="0 0 24 24"><use href="#i-home"/></svg>月球兔小屋</span>
+                <h2>兔兔今天在窗边等你</h2>
+                <p>已经陪你看了 12 个晚上</p>
+              </div>
+              <img class="rabbit rabbit--lg" src="assets/moon-rabbit.svg" alt="月球兔">
+            </article>
+
+            <article class="card only-insider">
+              <div class="card__head"><h2>月相轨迹</h2><span class="tagnum">9 月</span></div>
+              <div class="trail" id="trail" aria-label="本月心情月相"></div>
+              <p class="card__note">这个月你记录了 18 晚，其中 5 晚是满月。</p>
+            </article>
+
+            <!-- 打卡日历 -->
+            <article class="card only-insider">
+              <div class="card__head"><h2>打卡日历</h2><span class="tagnum">9 月 · 18/30</span></div>
+              <div class="calendar">
+                <div class="calendar__weekdays"><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span></div>
+                <div class="calendar__days">
+                  <span class="calendar__day calendar__day--empty"></span>
+                  <span class="calendar__day calendar__day--done">1</span>
+                  <span class="calendar__day calendar__day--done">2</span>
+                  <span class="calendar__day calendar__day--done">3</span>
+                  <span class="calendar__day">4</span>
+                  <span class="calendar__day calendar__day--done">5</span>
+                  <span class="calendar__day calendar__day--done">6</span>
+                  <span class="calendar__day calendar__day--done">7</span>
+                  <span class="calendar__day">8</span>
+                  <span class="calendar__day calendar__day--done">9</span>
+                  <span class="calendar__day calendar__day--today calendar__day--done">10</span>
+                  <span class="calendar__day">11</span>
+                  <span class="calendar__day">12</span>
+                  <span class="calendar__day">13</span>
+                  <span class="calendar__day">14</span>
+                  <span class="calendar__day">15</span>
+                  <span class="calendar__day">16</span>
+                  <span class="calendar__day">17</span>
+                  <span class="calendar__day">18</span>
+                  <span class="calendar__day">19</span>
+                  <span class="calendar__day">20</span>
+                  <span class="calendar__day">21</span>
+                  <span class="calendar__day">22</span>
+                  <span class="calendar__day">23</span>
+                  <span class="calendar__day">24</span>
+                  <span class="calendar__day">25</span>
+                  <span class="calendar__day">26</span>
+                  <span class="calendar__day">27</span>
+                  <span class="calendar__day">28</span>
+                  <span class="calendar__day">29</span>
+                  <span class="calendar__day">30</span>
+                </div>
+              </div>
+              <div class="calendar__legend">
+                <span><i class="calendar__dot calendar__dot--done"></i>已打卡</span>
+                <span><i class="calendar__dot calendar__dot--today"></i>今天</span>
+                <span><i class="calendar__dot"></i>未打卡</span>
+              </div>
+            </article>
+
+            <!-- 心情统计 -->
+            <article class="card only-insider">
+              <div class="card__head"><h2>心情统计</h2><span class="tagnum">本月</span></div>
+              <div class="moodstats">
+                <div class="moodstats__item">
+                  <span class="moodstats__phase" data-phase="4">满月</span>
+                  <div class="moodstats__bar"><i style="--w:28%"></i></div>
+                  <span class="moodstats__num">5 晚</span>
+                </div>
+                <div class="moodstats__item">
+                  <span class="moodstats__phase" data-phase="3">盈凸月</span>
+                  <div class="moodstats__bar"><i style="--w:22%"></i></div>
+                  <span class="moodstats__num">4 晚</span>
+                </div>
+                <div class="moodstats__item">
+                  <span class="moodstats__phase" data-phase="2">上弦月</span>
+                  <div class="moodstats__bar"><i style="--w:17%"></i></div>
+                  <span class="moodstats__num">3 晚</span>
+                </div>
+                <div class="moodstats__item">
+                  <span class="moodstats__phase" data-phase="1">蛾眉月</span>
+                  <div class="moodstats__bar"><i style="--w:11%"></i></div>
+                  <span class="moodstats__num">2 晚</span>
+                </div>
+                <div class="moodstats__item">
+                  <span class="moodstats__phase" data-phase="0">新月</span>
+                  <div class="moodstats__bar"><i style="--w:22%"></i></div>
+                  <span class="moodstats__num">4 晚</span>
+                </div>
+              </div>
+              <p class="card__note">这个月满月最多，你有 5 个晚上心情很好。继续加油～</p>
+            </article>
+
+            <!-- 成就徽章墙 -->
+            <article class="card">
+              <div class="card__head"><h2>成就徽章</h2><span class="tagnum">4 / 12</span></div>
+              <div class="badges">
+                <div class="badge badge--unlocked">
+                  <span class="badge__ico"><svg viewBox="0 0 24 24"><use href="#i-moon"/></svg></span>
+                  <span class="badge__name">初来乍到</span>
+                  <span class="badge__desc">第一次记录心情</span>
+                </div>
+                <div class="badge badge--unlocked">
+                  <span class="badge__ico"><svg viewBox="0 0 24 24"><use href="#i-uv"/></svg></span>
+                  <span class="badge__name">防晒达人</span>
+                  <span class="badge__desc">连续打卡 7 天</span>
+                </div>
+                <div class="badge badge--unlocked">
+                  <span class="badge__ico"><svg viewBox="0 0 24 24"><use href="#i-send"/></svg></span>
+                  <span class="badge__name">温暖发声</span>
+                  <span class="badge__desc">发布第一条打气</span>
+                </div>
+                <div class="badge badge--unlocked">
+                  <span class="badge__ico"><svg viewBox="0 0 24 24"><use href="#i-star"/></svg></span>
+                  <span class="badge__name">送星人</span>
+                  <span class="badge__desc">送出 50 颗星</span>
+                </div>
+                <div class="badge badge--locked">
+                  <span class="badge__ico"><svg viewBox="0 0 24 24"><use href="#i-lock"/></svg></span>
+                  <span class="badge__name">满月之夜</span>
+                  <span class="badge__desc">连续 30 天满月</span>
+                </div>
+                <div class="badge badge--locked">
+                  <span class="badge__ico"><svg viewBox="0 0 24 24"><use href="#i-lock"/></svg></span>
+                  <span class="badge__name">守护者</span>
+                  <span class="badge__desc">完成 9 课学习</span>
+                </div>
+              </div>
+            </article>
+
+            <article class="card">
+              <div class="card__head"><h2 class="only-insider-text">守护者</h2><h2 class="only-visitor-text">我的守护者身份</h2><span class="cardhead__more">管理</span></div>
+              <div class="rowitem"><span class="avatar">爸</span><div><b>爸爸</b><p>已绑定 · 可以看到复查提醒</p></div><span class="rowitem__ok">已连接</span></div>
+              <div class="rowitem"><span class="avatar avatar--ghost"><svg viewBox="0 0 24 24"><use href="#i-plus"/></svg></span><div><b>邀请一位守护者</b><p>朋友、老师或信赖的人都可以</p></div></div>
+            </article>
+
+            <!-- 顶栏收进来的三项设置 -->
+            <button class="listrow" id="row-notify" data-open="notify">
+              <span class="listrow__ico"><svg viewBox="0 0 24 24"><use href="#i-bell"/></svg></span>
+              <span class="listrow__text"><b>消息通知</b><small>有人给你送星时会提醒</small></span>
+              <svg viewBox="0 0 24 24" class="listrow__chev"><use href="#i-chev"/></svg>
+            </button>
+            <button class="listrow" id="row-intensity">
+              <span class="listrow__ico"><svg viewBox="0 0 24 24"><use href="#i-moon"/></svg></span>
+              <span class="listrow__text"><b>星空强度</b><small>静夜 / 微光 / 流星</small></span>
+              <span class="listrow__value" id="intensity-row">微光</span>
+            </button>
+            <button class="listrow" id="row-theme">
+              <span class="listrow__ico"><svg viewBox="0 0 24 24"><use href="#i-uv"/></svg></span>
+              <span class="listrow__text"><b>白天 / 黑夜</b><small>怕光的时候调暗一点</small></span>
+              <span class="listrow__value" id="theme-row">黑夜模式</span>
+            </button>
+            <button class="listrow" id="row-mode">
+              <span class="listrow__ico"><svg viewBox="0 0 24 24"><use href="#i-child"/></svg></span>
+              <span class="listrow__text"><b>版本</b><small>青少年版 / 儿童版</small></span>
+              <span class="listrow__value" id="mode-row">青少年版</span>
+            </button>
+
+            <button class="listrow" data-open="identity">
+              <span class="listrow__ico"><svg viewBox="0 0 24 24"><use href="#i-island"/></svg></span>
+              <span class="listrow__text"><b>身份与版本</b><small>岛内人 / 岛外人 · 青少年版 / 儿童版</small></span>
+              <svg viewBox="0 0 24 24" class="listrow__chev"><use href="#i-chev"/></svg>
+            </button>
+            <button class="listrow" data-open="a11y">
+              <span class="listrow__ico"><svg viewBox="0 0 24 24"><use href="#i-eye"/></svg></span>
+              <span class="listrow__text"><b>无障碍乐园</b><small>星空强度 · 字号 · 朗读 · 对比度</small></span>
+              <svg viewBox="0 0 24 24" class="listrow__chev"><use href="#i-chev"/></svg>
+            </button>
+            <button class="listrow" data-open="help">
+              <span class="listrow__ico"><svg viewBox="0 0 24 24"><use href="#i-info"/></svg></span>
+              <span class="listrow__text"><b>设计说明</b><small>这个作品集背后的思考</small></span>
+              <svg viewBox="0 0 24 24" class="listrow__chev"><use href="#i-chev"/></svg>
+            </button>
+            <button class="listrow" data-open="privacy">
+              <span class="listrow__ico"><svg viewBox="0 0 24 24"><use href="#i-lock"/></svg></span>
+              <span class="listrow__text"><b>设置 · 隐私 · 身份</b><small>少年岛民 · 内容默认仅好友可见</small></span>
+              <svg viewBox="0 0 24 24" class="listrow__chev"><use href="#i-chev"/></svg>
+            </button>
+            <div class="scroll__pad"></div>
+          </div>
+        </section>
+
+        <!-- ===================== 岛外人 · 岛上导览 ===================== -->
+        <section class="screen" data-screen="visitor" aria-label="岛上导览">
+          <div class="scroll">
+            <figure class="photo photo--card" data-label="照片 8 · 帽子与滤光镜">
+              <img data-slot="visitor-guide" src="assets/photos/hat-side.jpg" alt="午后街道树荫下，戴宽檐帽和滤光镜的少年的侧影">
+            </figure>
+            <p class="greet">先了解，再靠近<small>你正在以「岛外人」的身份参观月亮岛</small></p>
+
+            <article class="card card--progress">
+              <div class="ring" style="--p:44">
+                <div class="ring__inner"><b>44%</b><small>了解进度</small></div>
+              </div>
+              <div class="progress__text">
+                <h2>你已经走完 4 / 9 课</h2>
+                <p>下一步：<b>第一次见面可以说什么</b>。走完 9 课并答对测验，你会拿到守护者徽章。</p>
+              </div>
+            </article>
+
+            <article class="card card--lesson" data-open="quiz" data-quiz="lesson-detail">
+              <span class="chip chip--plain"><svg viewBox="0 0 24 24"><use href="#i-compass"/></svg>今日一课 · 3 分钟</span>
+              <h2 class="lesson__title">"你是不是怕光？"<br>这句话该怎么回</h2>
+              <p class="card__note">别人问起身体的时候，最有用的是不夸张、不追问。这一课讲三句可以直接用的话。</p>
+              <button class="primary-btn">开始这一课</button>
+            </article>
+
+            <div class="cardhead"><h2>你可能想先看这些</h2></div>
+            <div class="entry-grid">
+              <div class="entry" data-topic="怎么和别人说">
+                <span class="entry__ico"><svg viewBox="0 0 24 24"><use href="#i-heart"/></svg></span>
+                <h3>怎么相处</h3><p>座位、体育课、别盯着看</p>
+              </div>
+              <div class="entry" data-open="bunk">
+                <span class="entry__ico"><svg viewBox="0 0 24 24"><use href="#i-shield"/></svg></span>
+                <h3>常见误解</h3><p>6 条最常被信错的话</p>
+              </div>
+              <div class="entry" data-screen-jump="story">
+                <span class="entry__ico"><svg viewBox="0 0 24 24"><use href="#i-play"/></svg></span>
+                <h3>听听他们的声音</h3><p>3 段真实故事的音频</p>
+              </div>
+              <div class="entry" data-open="identity">
+                <span class="entry__ico"><svg viewBox="0 0 24 24"><use href="#i-badge"/></svg></span>
+                <h3>成为守护者</h3><p>岛外人可以走到哪一步</p>
+              </div>
+            </div>
+
+            <article class="card card--boundary">
+              <div class="card__head"><h2>你能看到什么</h2></div>
+              <ul class="boundary">
+                <li class="yes"><svg viewBox="0 0 24 24"><use href="#i-check"/></svg>科普、谣言粉碎机、相处指南的全部内容</li>
+                <li class="yes"><svg viewBox="0 0 24 24"><use href="#i-check"/></svg>打气墙：阅读与送星</li>
+                <li class="yes"><svg viewBox="0 0 24 24"><use href="#i-check"/></svg>月亮故事：他们愿意公开讲的部分</li>
+                <li class="yes"><svg viewBox="0 0 24 24"><use href="#i-check"/></svg>夜谈室：安静旁听</li>
+                <li class="no"><svg viewBox="0 0 24 24"><use href="#i-lock"/></svg>心情广场（只有岛内人可见）</li>
+                <li class="no"><svg viewBox="0 0 24 24"><use href="#i-lock"/></svg>任何人的身份、照片与病情</li>
+              </ul>
+              <p class="card__note">写下这条边界，是为了让岛内人不必反复判断"这句话能不能被外人看到"。</p>
+            </article>
+            <div class="scroll__pad"></div>
+          </div>
+        </section>
+
+        <!-- ===================== 儿童版 ===================== -->
+        <section class="screen screen--child" data-screen="child" aria-label="儿童版今日">
+          <div class="scroll">
+            <div class="kid-hero">
+              <figure class="photo photo--inline" data-label="照片 5 · 夜里的灯">
+                <img data-slot="child-lamp" src="assets/photos/night-lamp.jpg" alt="夜晚床头亮着一盏小夜灯，旁边是装满折纸星星的玻璃罐">
+              </figure>
+              <img class="rabbit rabbit--xl" src="assets/moon-rabbit.svg" alt="月球兔">
+              <h1>宝宝，晚上好呀</h1>
+              <p>今天是第 12 个晚上，兔兔在等你</p>
+              <button class="readbtn" data-read="宝宝，晚上好呀。今天是第十二个晚上，兔兔在等你。今天有三件小事要一起做哦。">
+                <svg viewBox="0 0 24 24"><use href="#i-mic"/></svg>点一下，我读给你听
+              </button>
+            </div>
+
+            <article class="kidcard">
+              <h2>今天帮兔兔做三件事</h2>
+              <div class="kidtask is-done"><span class="kidtask__ico">🧴</span><div><b>涂上魔法霜</b><small>涂脸和胳膊，凉凉的</small></div><span class="kidtask__tick"><svg viewBox="0 0 24 24"><use href="#i-check"/></svg></span></div>
+              <div class="kidtask"><span class="kidtask__ico">🧢</span><div><b>戴上小帽子</b><small>帽檐要挡住眼睛哦</small></div><span class="kidtask__tick"></span></div>
+              <div class="kidtask"><span class="kidtask__ico">🌙</span><div><b>和兔兔说晚安</b><small>选一个今天的月亮</small></div><span class="kidtask__tick"></span></div>
+            </article>
+
+            <article class="kidcard kidcard--jar">
+              <h2>兔兔的星星罐</h2>
+              <div class="jar jar--kid" aria-hidden="true"><div class="jar__fill" style="--fill:60%"><span>12 / 20</span></div></div>
+              <p class="kidnote">再攒 8 颗，兔兔的小屋就有一扇新窗户啦。</p>
+            </article>
+
+            <article class="kidcard kidcard--moon">
+              <h2>今天的月亮是什么样？</h2>
+              <div class="phases phases--kid" id="kid-phases" role="radiogroup" aria-label="选择月相"></div>
+            </article>
+
+            <button class="guardian-entry">我是家长 / 守护者 · 进入照护视图 <svg viewBox="0 0 24 24"><use href="#i-chev"/></svg></button>
+            <div class="scroll__pad"></div>
+          </div>
+        </section>
+
+        <!-- ===================== 儿童版 · 月亮故事 ===================== -->
+        <section class="screen screen--child" data-screen="child-story" aria-label="儿童版月亮故事">
+          <div class="scroll">
+            <div class="kid-hero kid-hero--mini">
+              <img class="rabbit rabbit--md" src="assets/moon-rabbit.svg" alt="月球兔">
+              <h1>今晚听哪一个？</h1>
+              <p>躺好，闭上眼睛，兔兔念给你听</p>
+            </div>
+
+            <article class="storycard storycard--on">
+              <span class="storycard__art">🌙</span>
+              <div class="storycard__body">
+                <h3>月亮为什么不怕黑</h3>
+                <p>4 分钟 · 讲给怕黑的小朋友</p>
+              </div>
+              <button class="storycard__play" aria-label="播放"><svg viewBox="0 0 24 24"><use href="#i-play"/></svg></button>
+            </article>
+            <article class="storycard">
+              <span class="storycard__art">🧢</span>
+              <div class="storycard__body">
+                <h3>小帽子的旅行</h3>
+                <p>3 分钟 · 关于防晒的故事</p>
+              </div>
+              <button class="storycard__play" aria-label="播放"><svg viewBox="0 0 24 24"><use href="#i-play"/></svg></button>
+            </article>
+            <article class="storycard">
+              <span class="storycard__art">🐰</span>
+              <div class="storycard__body">
+                <h3>兔兔也戴眼镜</h3>
+                <p>5 分钟 · 关于看不太清这件事</p>
+              </div>
+              <button class="storycard__play" aria-label="播放"><svg viewBox="0 0 24 24"><use href="#i-play"/></svg></button>
+            </article>
+
+            <article class="kidcard kidcard--sleep">
+              <h2>睡前让兔兔读</h2>
+              <p class="kidnote">关掉屏幕也可以听。声音会在 15 分钟后自动停下来，不吵醒你。</p>
+              <button class="readbtn" data-read="月亮为什么不怕黑。因为月亮知道，黑下来的时候，星星才会出现。">
+                <svg viewBox="0 0 24 24"><use href="#i-mic"/></svg>现在读给我听
+              </button>
+            </article>
+            <div class="scroll__pad"></div>
+          </div>
+        </section>
+
+        <!-- ===================== 儿童版 · 家长守护视图 ===================== -->
+        <section class="screen screen--child" data-screen="child-guardian" aria-label="家长守护视图">
+          <div class="scroll">
+            <p class="greet">家长守护视图<small>你能看到照护信息，看不到孩子的心情内容</small></p>
+
+            <article class="card card--guardnote">
+              <span class="chip chip--plain"><svg viewBox="0 0 24 24"><use href="#i-lock"/></svg>隐私边界</span>
+              <p class="card__note">孩子今晚记录了一轮<b>新月</b>，但没有写内容。月亮岛不会把孩子的情绪日记交给家长——如果他愿意讲，他会自己告诉你。</p>
+            </article>
+
+            <article class="card">
+              <div class="card__head"><h2>今天的三件事</h2><span class="tagnum">2 / 3</span></div>
+              <ul class="tasks">
+                <li class="task is-done"><span class="tick"><svg viewBox="0 0 24 24"><use href="#i-check"/></svg></span>涂防晒霜（早上 7:50 已完成）</li>
+                <li class="task is-done"><span class="tick"><svg viewBox="0 0 24 24"><use href="#i-check"/></svg></span>戴上小帽子</li>
+                <li class="task"><span class="tick"></span>和兔兔说晚安</li>
+              </ul>
+            </article>
+
+            <article class="card card--uv">
+              <div class="uv__head">
+                <span class="chip chip--sun"><svg viewBox="0 0 24 24"><use href="#i-uv"/></svg>今日紫外线</span>
+                <span class="uv__level">极强</span>
+              </div>
+              <p class="uv__tip">11:00–16:00 建议待在室内。孩子今天有体育课，已自动提醒老师把活动调到上午第一节。</p>
+              <div class="uv__actions"><span class="mini done"><svg viewBox="0 0 24 24"><use href="#i-check"/></svg>本周防晒 5 / 7 天</span></div>
+            </article>
+
+            <article class="card card--remind">
+              <span class="chip chip--plain"><svg viewBox="0 0 24 24"><use href="#i-bell"/></svg>复查提醒 · 还有 3 天</span>
+              <p class="remind__main">皮肤科随访 · 9 月 13 日 上午</p>
+              <ul class="checklist">
+                <li class="is-done"><span class="tick"><svg viewBox="0 0 24 24"><use href="#i-check"/></svg></span>带上这半年的防晒记录</li>
+                <li><span class="tick"></span>准备想问医生的问题（可以语音录）</li>
+                <li><span class="tick"></span>提前跟孩子说清楚，不要临出门才讲</li>
+              </ul>
+            </article>
+
+            <article class="card">
+              <div class="card__head"><h2>视力与眼睛</h2><span class="cardhead__more">档案</span></div>
+              <div class="rowitem rowitem--static"><span class="avatar"><svg viewBox="0 0 24 24"><use href="#i-eye"/></svg></span><div><b>上次验光 3 月 12 日</b><p>屈光度较半年前变化不大，医生建议继续戴滤光镜</p></div></div>
+              <div class="rowitem rowitem--static"><span class="avatar avatar--ghost"><svg viewBox="0 0 24 24"><use href="#i-bell"/></svg></span><div><b>下次眼科随访：建议 6 个月内</b><p>目前还没有预约</p></div></div>
+              <button class="ghost-btn ghost-btn--wide">去预约眼科随访</button>
+            </article>
+
+            <article class="card card--school">
+              <div class="card__head"><h2>给老师的小卡片</h2><span class="cardhead__more">预览</span></div>
+              <div class="notecard">
+                <p>老师您好，我是小宇的家长。小宇有白化病，皮肤不能长时间晒太阳，眼睛怕光、看远处会吃力。</p>
+                <p>想麻烦您三件事：座位尽量靠前并避开窗边；户外课请他戴帽子和滤光镜；如果他看黑板吃力，允许他走近一点。</p>
+                <p>他和其他孩子没有区别，只是需要一点光线的照顾。谢谢您。</p>
+              </div>
+              <div class="challenge__row">
+                <button class="primary-btn">复制这张卡片</button>
+                <button class="ghost-btn" data-read="老师您好，我是小宇的家长。小宇有白化病，皮肤不能长时间晒太阳，眼睛怕光、看远处会吃力。想麻烦您三件事：座位尽量靠前并避开窗边；户外课请他戴帽子和滤光镜；如果他看黑板吃力，允许他走近一点。他和其他孩子没有区别，只是需要一点光线的照顾。谢谢您。">听一遍</button>
+              </div>
+            </article>
+
+            <article class="card">
+              <div class="card__head"><h2>家长支持</h2><span class="cardhead__more">进入</span></div>
+              <p class="card__note">「家长也在学」房间每周三晚开，主持人是医生和几位家长。很多家长的第一句话都是：我其实比孩子更怕。</p>
+            </article>
+
+            <button class="guardian-entry" data-screen-jump="child">← 回到孩子的月亮岛</button>
+            <div class="scroll__pad"></div>
+          </div>
+        </section>
+
+        <!-- ===================== 二级页 · 帖子详情（可回复） ===================== -->
+        <section class="screen screen--sub" data-screen="post-detail" aria-label="帖子详情">
+          <div class="subhead">
+            <button class="backbtn" data-screen-jump="planet" aria-label="返回"><svg viewBox="0 0 24 24"><use href="#i-chev"/></svg></button>
+            <span class="subhead__title">帖子详情</span>
+          </div>
+          <div class="scroll">
+            <article class="postfull">
+              <div class="postfull__head">
+                <span class="avatar avatar--moon"><svg viewBox="0 0 24 24"><use href="#i-moon"/></svg></span>
+                <div><b>云层以上</b><p>3 小时前 · 来自打气墙</p></div>
+              </div>
+              <p class="postfull__text">今天第一次戴着帽子去了海边。风很大，沙子硌脚，但我在。</p>
+              <div class="postfull__meta">
+                <span><svg viewBox="0 0 24 24"><use href="#i-star"/></svg>128 颗星</span>
+                <span><svg viewBox="0 0 24 24"><use href="#i-send"/></svg>分享</span>
+              </div>
+            </article>
+            <div class="replyhead"><h3>编辑挑出的 3 句回应</h3><span>只送星，不开放回复</span></div>
+            <div class="replylist">
+              <div class="reply">
+                <span class="avatar"><svg viewBox="0 0 24 24"><use href="#i-moon"/></svg></span>
+                <div class="reply__body">
+                  <div class="reply__meta"><b>小夜灯</b><span>2 小时前 · 广东</span></div>
+                  <p>海边！我一直不敢去，怕晒。你戴的是什么帽子？</p>
+                  <div class="reply__actions"><span>被 8 个人送出星星</span></div>
+                </div>
+              </div>
+              <div class="reply">
+                <span class="avatar"><svg viewBox="0 0 24 24"><use href="#i-moon"/></svg></span>
+                <div class="reply__body">
+                  <div class="reply__meta"><b>半格光</b><span>1 小时前 · 浙江</span></div>
+                  <p>"但我在"这三个字好有力量。我也想去一次海边。</p>
+                  <div class="reply__actions"><span>被 12 个人送出星星</span></div>
+                </div>
+              </div>
+              <div class="reply reply--sub">
+                <span class="avatar avatar--ghost"><svg viewBox="0 0 24 24"><use href="#i-moon"/></svg></span>
+                <div class="reply__body">
+                  <div class="reply__meta"><b>云层以上</b><span>楼主 · 40 分钟前 · 山东</span></div>
+                  <p>宽檐帽 + 防晒衣，涂了 SPF50+。早上七点去的，人少光也弱。</p>
+                  <div class="reply__actions"><span>楼主补充</span></div>
+                </div>
+              </div>
+            </div>
+            <div class="scroll__pad"></div>
+          </div>
+          <div class="actionbar">
+            <button class="sendstar" data-starname="云层以上"><svg viewBox="0 0 24 24"><use href="#i-star"/></svg>送一颗星 <b>128</b></button>
+            <button class="ghost-btn" data-read="今天第一次戴着帽子去了海边。风很大，沙子硌脚，但我在。"><svg viewBox="0 0 24 24"><use href="#i-play"/></svg>朗读</button>
+          </div>
+        </section>
+
+        <!-- ===================== 二级页 · 故事详情 ===================== -->
+        <section class="screen screen--sub" data-screen="story-detail" aria-label="故事详情">
+          <div class="subhead">
+            <button class="backbtn" data-screen-jump="story" aria-label="返回"><svg viewBox="0 0 24 24"><use href="#i-chev"/></svg></button>
+            <span class="subhead__title">月亮故事</span>
+          </div>
+          <div class="scroll">
+            <article class="storyfull">
+              <span class="chip chip--plain"><svg viewBox="0 0 24 24"><use href="#i-play"/></svg>音频故事 · 4 分 12 秒</span>
+              <h2 class="storyfull__title">我把教室的窗帘换成了遮光的</h2>
+              <p class="storyfull__meta">17 岁 · 高二 · 来自「月亮故事 · 听 TA 说」</p>
+              <figure class="photo photo--wide" data-label="照片 7 · 泳池边">
+                <img data-slot="story-pool" src="assets/photos/pool-edge.jpg" alt="泳池边小腿浸在水里，水面映着粉色的光，旁边椅子上搭着防晒衣">
+              </figure>
+              <div class="audioplayer">
+                <button class="audioplayer__play" aria-label="播放"><svg viewBox="0 0 24 24"><use href="#i-play"/></svg></button>
+                <div class="audioplayer__bar"><i style="--w:35%"></i></div>
+                <span class="audioplayer__time">1:28 / 4:12</span>
+              </div>
+              <div class="storyfull__body">
+                <p>我小时候以为，只有我一个人怕光。后来发现，是很多人都还没学会把灯调暗一点。</p>
+                <p>高二那年，我终于鼓起勇气跟班主任说了。她没有说"你忍一忍"，而是说"我们一起想办法"。</p>
+                <p>后来教室的窗帘换成了遮光的，我的座位从窗边调到了中间。那天阳光照进来的时候，我第一次觉得，教室也是可以待的地方。</p>
+                <p>如果你也在怕光，不是你太娇气，是这个世界还不够温柔。你可以说出来的。</p>
+              </div>
+              <div class="storyfull__actions">
+                <button class="ghost-btn"><svg viewBox="0 0 24 24"><use href="#i-star"/></svg>送一颗星</button>
+                <button class="ghost-btn"><svg viewBox="0 0 24 24"><use href="#i-heart"/></svg>收藏</button>
+                <button class="ghost-btn"><svg viewBox="0 0 24 24"><use href="#i-send"/></svg>分享</button>
+              </div>
+            </article>
+            <div class="cardhead"><h2>你可能还想听</h2></div>
+            <article class="audio" data-screen-jump="story-detail">
+              <button class="audio__play" aria-label="播放"><svg viewBox="0 0 24 24"><use href="#i-play"/></svg></button>
+              <div class="audio__body"><h3>我的白头发，是妈妈给的礼物</h3><p>13 岁 · 初一 · 3 分 08 秒</p></div>
+            </article>
+            <article class="audio" data-screen-jump="story-detail">
+              <button class="audio__play" aria-label="播放"><svg viewBox="0 0 24 24"><use href="#i-play"/></svg></button>
+              <div class="audio__body"><h3>我和我爸的防晒战</h3><p>20 岁 · 大一 · 5 分 40 秒</p></div>
+            </article>
+            <div class="scroll__pad"></div>
+          </div>
+        </section>
+
+        <!-- ===================== 二级页 · 课程详情 ===================== -->
+        <section class="screen screen--sub" data-screen="lesson-detail" aria-label="课程详情">
+          <div class="subhead">
+            <button class="backbtn" data-screen-jump="learn" aria-label="返回"><svg viewBox="0 0 24 24"><use href="#i-chev"/></svg></button>
+            <span class="subhead__title">第 5 课 · 常见误解</span>
+          </div>
+          <div class="scroll">
+            <article class="lessonfull">
+              <div class="lessonfull__progress">
+                <span>课程进度</span>
+                <div class="mapbar"><i style="--w:60%"></i></div>
+                <span>3 / 5 节</span>
+              </div>
+              <h2 class="lessonfull__title">6 句最常被说反的话</h2>
+              <p class="lessonfull__meta">3 分钟 · 岛外人必修课 ·「认识它」系列</p>
+              <article class="lcard lcard--myth" data-lcard>
+                <figure class="lcard__figure">
+                  <img data-slot="detail-01" src="assets/lessons/detail-01.jpg" alt="两个小孩在浅色教室门口牵手，手相接处浮着一圈柔和的光" loading="lazy">
+                </figure>
+                <div class="lcard__text">
+                  <p class="lcard__no">01</p>
+                  <p class="lcard__myth"><span class="lcard__tag">误区</span>"白化病会传染。"</p>
+                  <p class="lcard__fact"><span class="lcard__tag lcard__tag--fact">事实</span>不会。它是基因突变导致的遗传病，跟接触、一起吃饭、握手都没有关系。</p>
+                </div>
+              </article>
+              <article class="lcard lcard--myth" data-lcard>
+                <figure class="lcard__figure">
+                  <img data-slot="detail-02" src="assets/lessons/detail-02.jpg" alt="一颗玻璃雪球里均匀散落着许多光点，球外是粉紫色的云" loading="lazy">
+                </figure>
+                <div class="lcard__text">
+                  <p class="lcard__no">02</p>
+                  <p class="lcard__myth"><span class="lcard__tag">误区</span>"他们是外国人 / 混血。"</p>
+                  <p class="lcard__fact"><span class="lcard__tag lcard__tag--fact">事实</span>不是。白化病在全世界各人种、各民族中都会出现，中国人群发病率约为 1/18000。</p>
+                </div>
+              </article>
+              <article class="lcard lcard--myth" data-lcard>
+                <figure class="lcard__figure">
+                  <img data-slot="detail-03" src="assets/lessons/detail-03.jpg" alt="银白短发的小孩在教室里举手，黑板前有一束粉色的光" loading="lazy">
+                </figure>
+                <div class="lcard__text">
+                  <p class="lcard__no">03</p>
+                  <p class="lcard__myth"><span class="lcard__tag">误区</span>"他们智力有问题。"</p>
+                  <p class="lcard__fact"><span class="lcard__tag lcard__tag--fact">事实</span>白化病主要影响黑色素合成，一般不影响智力。视力问题可能影响学习，但不是智力障碍。</p>
+                </div>
+              </article>
+              <article class="lcard lcard--myth" data-lcard>
+                <figure class="lcard__figure">
+                  <img data-slot="detail-04" src="assets/lessons/detail-04.jpg" alt="戴宽檐帽、滤光镜和浅色长袖的小孩在沙滩上奔跑" loading="lazy">
+                </figure>
+                <div class="lcard__text">
+                  <p class="lcard__no">04</p>
+                  <p class="lcard__myth"><span class="lcard__tag">误区</span>"他们不能晒太阳，所以很脆弱。"</p>
+                  <p class="lcard__fact"><span class="lcard__tag lcard__tag--fact">事实</span>做好防晒（帽子、防晒衣、防晒霜）就可以正常出门。怕光不等于脆弱。</p>
+                </div>
+              </article>
+              <article class="lcard lcard--myth" data-lcard>
+                <figure class="lcard__figure">
+                  <img data-slot="detail-05" src="assets/lessons/detail-05.jpg" alt="一只眼睛被处理成一弯月亮的形状，眼周有细小的光点" loading="lazy">
+                </figure>
+                <div class="lcard__text">
+                  <p class="lcard__no">05</p>
+                  <p class="lcard__myth"><span class="lcard__tag">误区</span>"白化病就是皮肤白，没别的。"</p>
+                  <p class="lcard__fact"><span class="lcard__tag lcard__tag--fact">事实</span>眼部损害更常见：畏光、眼球震颤、高度近视、视力低下。皮肤长期暴晒有皮肤癌风险。</p>
+                </div>
+              </article>
+              <article class="lcard lcard--myth" data-lcard>
+                <figure class="lcard__figure">
+                  <img data-slot="detail-06" src="assets/lessons/detail-06.jpg" alt="深蓝底色上一大一小两颗星星被一条柔和的光线连在一起" loading="lazy">
+                </figure>
+                <div class="lcard__text">
+                  <p class="lcard__no">06</p>
+                  <p class="lcard__myth"><span class="lcard__tag">误区</span>"他们不能结婚生子。"</p>
+                  <p class="lcard__fact"><span class="lcard__tag lcard__tag--fact">事实</span>可以。多数为常染色体隐性遗传，配偶不携带致病基因时，子女不会患病。建议婚前做遗传咨询。</p>
+                </div>
+              </article>
+              <div class="lessonfull__quiz">
+                <span class="chip chip--plain"><svg viewBox="0 0 24 24"><use href="#i-gear"/></svg>小测验 · 3 道题</span>
+                <p>学完这一课，来测一测你记住了多少。答错会告诉你哪句被说反了。</p>
+                <button class="primary-btn" data-open="quiz" data-quiz="lesson-detail">开始测验</button>
+              </div>
+              <div class="lessonfull__nav">
+                <button class="ghost-btn" data-screen-jump="lesson-family">← 上一课</button>
+                <button class="primary-btn" data-screen-jump="learn">回到科普首页 →</button>
+              </div>
+            </article>
+            <div class="scroll__pad"></div>
+          </div>
+        </section>
+
+        <!-- ===================== 二级页 · 课程：是什么·成因与遗传 ===================== -->
+        <section class="screen screen--sub" data-screen="lesson-cause" aria-label="是什么·成因与遗传">
+          <div class="subhead">
+            <button class="backbtn" data-screen-jump="learn" aria-label="返回"><svg viewBox="0 0 24 24"><use href="#i-chev"/></svg></button>
+            <span class="subhead__title">第 1 课 · 是什么</span>
+          </div>
+          <div class="scroll">
+            <article class="lessonfull">
+              <div class="lessonfull__progress">
+                <span>课程进度</span>
+                <div class="mapbar"><i style="--w:20%"></i></div>
+                <span>1 / 5 节</span>
+              </div>
+              <h2 class="lessonfull__title">白化病是什么？</h2>
+              <p class="lessonfull__meta">4 分钟 · 入门必读 ·「认识它」系列</p>
+              <article class="lcard lcard--link" data-lcard data-article="lesson-cause#01" role="button" tabindex="0" aria-label="看全文：定义">
+                <figure class="lcard__figure">
+                  <img data-slot="cause-01" src="assets/lessons/cause-01.jpg" alt="一只玻璃瓶里装满银白色细砂，砂粒在光里缓慢漂浮" loading="lazy">
+                </figure>
+                <div class="lcard__text">
+                  <p class="lcard__no">01</p>
+                  <h3 class="lcard__title">定义</h3>
+                  <p class="lcard__lead">色素合成出了问题，不是病，也不会传染。</p>
+                  <div class="lcard__more" id="lesson-cause-01-more" hidden>
+                    <p>白化病是一种先天性遗传病，由于基因突变导致黑色素（决定皮肤、头发、眼睛颜色的色素）合成障碍。患者皮肤、毛发、眼睛色素减少或缺失。</p>
+                  </div>
+                  <span class="lcard__open">看全文<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-chev"/></svg></span>
+                </div>
+              </article>
+              <article class="lcard lcard--link" data-lcard data-article="lesson-cause#02" role="button" tabindex="0" aria-label="看全文：成因">
+                <figure class="lcard__figure">
+                  <img data-slot="cause-02" src="assets/lessons/cause-02.jpg" alt="云里长出发光的双螺旋藤蔓，其中一段暗下去，垂着一朵合起的花" loading="lazy">
+                </figure>
+                <div class="lcard__text">
+                  <p class="lcard__no">02</p>
+                  <h3 class="lcard__title">成因</h3>
+                  <p class="lcard__lead">几个基因的变异，会让黑色素合成受阻。</p>
+                  <div class="lcard__more" id="lesson-cause-02-more" hidden>
+                    <p>不是"晒太阳少"，也不是"营养不良"。是控制黑色素合成的基因发生了突变，目前已发现至少 18 种相关基因。出生时就已决定，后天无法"变黑"。</p>
+                  </div>
+                  <span class="lcard__open">看全文<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-chev"/></svg></span>
+                </div>
+              </article>
+              <article class="lcard lcard--link" data-lcard data-article="lesson-cause#03" role="button" tabindex="0" aria-label="看全文：遗传方式">
+                <figure class="lcard__figure">
+                  <img data-slot="cause-03" src="assets/lessons/cause-03.jpg" alt="一排淡淡的人形剪影手拉手，只有一个人身上亮着一颗星" loading="lazy">
+                </figure>
+                <div class="lcard__text">
+                  <p class="lcard__no">03</p>
+                  <h3 class="lcard__title">遗传方式</h3>
+                  <p class="lcard__lead">多数是隐性遗传，父母往往并不患病。</p>
+                  <div class="lcard__more" id="lesson-cause-03-more" hidden>
+                    <p>多数为常染色体隐性遗传：父母双方都是携带者（不发病），子女有 25% 概率患病，男女均等。少数类型（如 OA1）为 X 连锁隐性，男性多见。</p>
+                  </div>
+                  <span class="lcard__open">看全文<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-chev"/></svg></span>
+                </div>
+              </article>
+              <article class="lcard lcard--link" data-lcard data-article="lesson-cause#04" role="button" tabindex="0" aria-label="看全文：发病率">
+                <figure class="lcard__figure">
+                  <img data-slot="cause-04" src="assets/lessons/cause-04.jpg" alt="粉紫色夜空里撒满细小光点，其中一颗亮得明显" loading="lazy">
+                </figure>
+                <div class="lcard__text">
+                  <p class="lcard__no">04</p>
+                  <h3 class="lcard__title">发病率</h3>
+                  <p class="lcard__lead">中国约 1/18000，任何民族都会出现。</p>
+                  <div class="lcard__more" id="lesson-cause-04-more" hidden>
+                    <p>中国人群发病率约为 1/18000，携带者频率约 1/60。全世界各人种、各民族都会出现，不是某个地区或民族特有的。全球约有 1/17000 人患有某种类型的白化病。</p>
+                  </div>
+                  <span class="lcard__open">看全文<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-chev"/></svg></span>
+                </div>
+              </article>
+              <article class="lcard lcard--link" data-lcard data-article="lesson-cause#05" role="button" tabindex="0" aria-label="看全文：主要分类">
+                <figure class="lcard__figure">
+                  <img data-slot="cause-05" src="assets/lessons/cause-05.jpg" alt="三颗大小不同的玻璃球并排放在桌面，球里分别是月亮、眼睛和星星的形状" loading="lazy">
+                </figure>
+                <div class="lcard__text">
+                  <p class="lcard__no">05</p>
+                  <h3 class="lcard__title">主要分类</h3>
+                  <p class="lcard__lead">分 OCA、OA 和少见的综合征型三类。</p>
+                  <div class="lcard__more" id="lesson-cause-05-more" hidden>
+                    <p>① 眼皮肤白化病（OCA）：皮肤、毛发、眼睛都受影响，最常见；② 眼白化病（OA）：主要影响眼睛，皮肤毛发颜色接近正常；③ 综合征型白化病：如 Hermansky-Pudlak 综合征，可能伴随出血倾向或肺部问题。</p>
+                  </div>
+                  <span class="lcard__open">看全文<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-chev"/></svg></span>
+                </div>
+              </article>
+              <div class="lessonfull__quiz">
+                <span class="chip chip--plain"><svg viewBox="0 0 24 24"><use href="#i-gear"/></svg>小测验 · 3 道题</span>
+                <p>学完这一课，来测一测你记住了多少。</p>
+                <button class="primary-btn" data-open="quiz" data-quiz="lesson-cause">开始测验</button>
+              </div>
+              <div class="lessonfull__nav">
+                <button class="ghost-btn" disabled>← 上一课</button>
+                <button class="primary-btn" data-screen-jump="lesson-eye">下一课 →</button>
+              </div>
+            </article>
+            <div class="scroll__pad"></div>
+          </div>
+        </section>
+
+        <!-- ===================== 二级页 · 课程：眼睛与视力 ===================== -->
+        <section class="screen screen--sub" data-screen="lesson-eye" aria-label="眼睛与视力">
+          <div class="subhead">
+            <button class="backbtn" data-screen-jump="learn" aria-label="返回"><svg viewBox="0 0 24 24"><use href="#i-chev"/></svg></button>
+            <span class="subhead__title">第 2 课 · 眼睛与视力</span>
+          </div>
+          <div class="scroll">
+            <article class="lessonfull">
+              <div class="lessonfull__progress">
+                <span>课程进度</span>
+                <div class="mapbar"><i style="--w:40%"></i></div>
+                <span>2 / 5 节</span>
+              </div>
+              <h2 class="lessonfull__title">眼睛为什么会受影响？</h2>
+              <p class="lessonfull__meta">5 分钟 · 重点关注 ·「认识它」系列</p>
+              <article class="lcard lcard--link" data-lcard data-article="lesson-eye#01" role="button" tabindex="0" aria-label="看全文：畏光（怕光）">
+                <figure class="lcard__figure">
+                  <img data-slot="eye-01" src="assets/lessons/eye-01.jpg" alt="柔光房间里，戴深色滤光镜的小孩侧身站在一束过曝的光旁边" loading="lazy">
+                </figure>
+                <div class="lcard__text">
+                  <p class="lcard__no">01</p>
+                  <h3 class="lcard__title">畏光（怕光）</h3>
+                  <p class="lcard__lead">不是怕光，是强光下无法收窄瞳孔。</p>
+                  <div class="lcard__more" id="lesson-eye-01-more" hidden>
+                    <p>虹膜色素少，无法有效阻挡光线，强光下会刺眼、流泪、眯眼。这不是"矫情"，是真实的生理反应。滤光镜（不是普通墨镜）可以有效缓解。</p>
+                  </div>
+                  <span class="lcard__open">看全文<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-chev"/></svg></span>
+                </div>
+              </article>
+              <article class="lcard lcard--link" data-lcard data-article="lesson-eye#02" role="button" tabindex="0" aria-label="看全文：眼球震颤">
+                <figure class="lcard__figure">
+                  <img data-slot="eye-02" src="assets/lessons/eye-02.jpg" alt="玻璃球里悬着一弯月亮，被水波晃出轻微的重影" loading="lazy">
+                </figure>
+                <div class="lcard__text">
+                  <p class="lcard__no">02</p>
+                  <h3 class="lcard__title">眼球震颤</h3>
+                  <p class="lcard__lead">眼球会不自主地轻微抖动，多数不影响生活。</p>
+                  <div class="lcard__more" id="lesson-eye-02-more" hidden>
+                    <p>眼睛不自主地左右或上下摆动，自己控制不了。这是因为视网膜黄斑发育不良，大脑无法稳定注视。多数患者通过"代偿头位"（歪头）来找到一个相对清晰的注视角度。</p>
+                  </div>
+                  <span class="lcard__open">看全文<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-chev"/></svg></span>
+                </div>
+              </article>
+              <article class="lcard lcard--link" data-lcard data-article="lesson-eye#03" role="button" tabindex="0" aria-label="看全文：高度近视 / 远视">
+                <figure class="lcard__figure">
+                  <img data-slot="eye-03" src="assets/lessons/eye-03.jpg" alt="虚化成色块的视力表前放着一副圆框眼镜，镜片里倒映清晰的云" loading="lazy">
+                </figure>
+                <div class="lcard__text">
+                  <p class="lcard__no">03</p>
+                  <h3 class="lcard__title">高度近视 / 远视</h3>
+                  <p class="lcard__lead">近视或远视很常见，需要及时配镜。</p>
+                  <div class="lcard__more" id="lesson-eye-03-more" hidden>
+                    <p>多数患者有高度屈光不正（近视或远视），需要长期戴眼镜矫正。但即使戴上眼镜，视力也往往达不到 1.0，因为核心问题是视网膜和视神经的发育，不是单纯的屈光问题。</p>
+                  </div>
+                  <span class="lcard__open">看全文<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-chev"/></svg></span>
+                </div>
+              </article>
+              <article class="lcard lcard--link" data-lcard data-article="lesson-eye#04" role="button" tabindex="0" aria-label="看全文：低视力">
+                <figure class="lcard__figure">
+                  <img data-slot="eye-04" src="assets/lessons/eye-04.jpg" alt="放大镜把一小片云放大成清晰的光斑，周围是虚化的粉彩" loading="lazy">
+                </figure>
+                <div class="lcard__text">
+                  <p class="lcard__no">04</p>
+                  <h3 class="lcard__title">低视力</h3>
+                  <p class="lcard__lead">低视力靠助视器，不是「看不清就算了」。</p>
+                  <div class="lcard__more" id="lesson-eye-04-more" hidden>
+                    <p>多数患者最佳矫正视力在 0.1–0.5 之间，属于低视力范围。但低视力不等于"看不见"，更不等于"不能学习/工作"。借助助视器、大字教材、合理的座位安排，完全可以正常学习生活。</p>
+                  </div>
+                  <span class="lcard__open">看全文<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-chev"/></svg></span>
+                </div>
+              </article>
+              <article class="lcard lcard--link" data-lcard data-article="lesson-eye#05" role="button" tabindex="0" aria-label="看全文：滤光镜怎么选">
+                <figure class="lcard__figure">
+                  <img data-slot="eye-05" src="assets/lessons/eye-05.jpg" alt="一副带侧挡的深色滤光镜立在桌面，镜片倒映粉紫色的云与弯月" loading="lazy">
+                </figure>
+                <div class="lcard__text">
+                  <p class="lcard__no">05</p>
+                  <h3 class="lcard__title">滤光镜怎么选</h3>
+                  <p class="lcard__lead">选带侧挡、能过滤强光的镜片。</p>
+                  <div class="lcard__more" id="lesson-eye-05-more" hidden>
+                    <p>① 不是普通墨镜，要选能过滤紫外线和短波蓝光的医用滤光镜；② 室内可以戴浅茶色（10%–20% 透光率），户外戴深茶色或灰色（5%–10%）；③ 镜框要大，能挡住侧面来的光；④ 建议在眼科医生指导下验配。</p>
+                  </div>
+                  <span class="lcard__open">看全文<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-chev"/></svg></span>
+                </div>
+              </article>
+              <div class="lessonfull__quiz">
+                <span class="chip chip--plain"><svg viewBox="0 0 24 24"><use href="#i-gear"/></svg>小测验 · 3 道题</span>
+                <p>眼球震颤可以自己控制吗？滤光镜和普通墨镜有什么区别？</p>
+                <button class="primary-btn" data-open="quiz" data-quiz="lesson-eye">开始测验</button>
+              </div>
+              <div class="lessonfull__nav">
+                <button class="ghost-btn" data-screen-jump="lesson-cause">← 上一课</button>
+                <button class="primary-btn" data-screen-jump="lesson-sun">下一课 →</button>
+              </div>
+            </article>
+            <div class="scroll__pad"></div>
+          </div>
+        </section>
+
+        <!-- ===================== 二级页 · 课程：日常防晒 ===================== -->
+        <section class="screen screen--sub" data-screen="lesson-sun" aria-label="日常防晒">
+          <div class="subhead">
+            <button class="backbtn" data-screen-jump="learn" aria-label="返回"><svg viewBox="0 0 24 24"><use href="#i-chev"/></svg></button>
+            <span class="subhead__title">第 3 课 · 日常防晒</span>
+          </div>
+          <div class="scroll">
+            <article class="lessonfull">
+              <div class="lessonfull__progress">
+                <span>课程进度</span>
+                <div class="mapbar"><i style="--w:60%"></i></div>
+                <span>3 / 5 节</span>
+              </div>
+              <h2 class="lessonfull__title">怎么防晒才有效？</h2>
+              <p class="lessonfull__meta">4 分钟 · 实用指南 ·「认识它」系列</p>
+              <figure class="photo photo--wide" data-label="照片 4 · 涂防晒的手">
+                <img data-slot="lesson-sun-hero" src="assets/photos/sunscreen-hands.jpg" alt="俯拍，成年人的手正给一只孩子的手臂涂防晒霜">
+              </figure>
+              <article class="lcard lcard--link" data-lcard data-article="lesson-sun#01" role="button" tabindex="0" aria-label="看全文：防晒原则：遮挡优先">
+                <div class="lcard__text">
+                  <p class="lcard__no">01</p>
+                  <h3 class="lcard__title">防晒原则：遮挡优先</h3>
+                  <p class="lcard__lead">遮挡优先，防晒霜是补位而不是主力。</p>
+                  <div class="lcard__more" id="lesson-sun-01-more" hidden>
+                    <p>白化病患者皮肤缺乏黑色素保护，对紫外线极度敏感。防晒的核心原则是"能挡住就不涂"：宽檐帽 &gt; 防晒衣 &gt; 防晒霜。物理遮挡比化学防晒更可靠、更持久。</p>
+                  </div>
+                  <span class="lcard__open">看全文<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-chev"/></svg></span>
+                </div>
+              </article>
+              <article class="lcard lcard--link" data-lcard data-article="lesson-sun#02" role="button" tabindex="0" aria-label="看全文：防晒霜怎么选">
+                <figure class="lcard__figure">
+                  <img data-slot="sun-02" src="assets/lessons/sun-02.jpg" alt="一支没有标签的防晒霜立在桌面，旁边一片叶子压在光斑里" loading="lazy">
+                </figure>
+                <div class="lcard__text">
+                  <p class="lcard__no">02</p>
+                  <h3 class="lcard__title">防晒霜怎么选</h3>
+                  <p class="lcard__lead">看 SPF 和 PA，也要看涂够没涂够。</p>
+                  <div class="lcard__more" id="lesson-sun-02-more" hidden>
+                    <p>① SPF50+ 起步，PA++++（最高级）；② 优先选物理防晒（氧化锌/二氧化钛），温和不刺激；③ 出门前 15–20 分钟涂，让皮肤吸收；④ 用量要足：面部约一枚硬币大小，全身约 30ml；⑤ 每 2 小时补涂一次，出汗或游泳后立即补涂。</p>
+                  </div>
+                  <span class="lcard__open">看全文<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-chev"/></svg></span>
+                </div>
+              </article>
+              <article class="lcard lcard--link" data-lcard data-article="lesson-sun#03" role="button" tabindex="0" aria-label="看全文：衣物怎么选">
+                <figure class="lcard__figure">
+                  <img data-slot="sun-03" src="assets/lessons/sun-03.jpg" alt="树荫下，穿浅色长袖戴帽子的小孩坐在草地上看书" loading="lazy">
+                </figure>
+                <div class="lcard__text">
+                  <p class="lcard__no">03</p>
+                  <h3 class="lcard__title">衣物怎么选</h3>
+                  <p class="lcard__lead">长袖、深色、织得密，比颜色更重要。</p>
+                  <div class="lcard__more" id="lesson-sun-03-more" hidden>
+                    <p>① 选 UPF50+ 的防晒衣，普通 T 恤 UPF 只有 5–10；② 颜色选深色（藏青、黑色），比浅色防晒效果好；③ 织法紧密、不透明的面料；④ 长袖长裤优先，露出的皮肤都要涂防晒；⑤ 宽檐帽（帽檐 ≥ 7cm）能挡住脸和脖子。</p>
+                  </div>
+                  <span class="lcard__open">看全文<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-chev"/></svg></span>
+                </div>
+              </article>
+              <article class="lcard lcard--link" data-lcard data-article="lesson-sun#04" role="button" tabindex="0" aria-label="看全文：不同紫外线指数怎么应对">
+                <figure class="lcard__figure">
+                  <img data-slot="sun-04" src="assets/lessons/sun-04.jpg" alt="半透明的弧形刻度盘悬在半空，颜色从冷青过渡到粉橘" loading="lazy">
+                </figure>
+                <div class="lcard__text">
+                  <p class="lcard__no">04</p>
+                  <h3 class="lcard__title">不同紫外线指数怎么应对</h3>
+                  <p class="lcard__lead">UV 3 以上就要遮挡，8 以上少出门。</p>
+                  <div class="lcard__more" id="lesson-sun-04-more" hidden>
+                    <p>① UV 0–2（低）：正常活动，戴帽子即可；② UV 3–5（中）：涂防晒+帽子+太阳镜，10–16 点尽量在阴凉处；③ UV 6–7（高）：全套防晒，避免 11–15 点户外；④ UV 8–10（很高）：尽量待室内，必须出门时全套防晒+打伞；⑤ UV 11+（极高）：避免所有户外活动。</p>
+                  </div>
+                  <span class="lcard__open">看全文<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-chev"/></svg></span>
+                </div>
+              </article>
+              <article class="lcard lcard--link" data-lcard data-article="lesson-sun#05" role="button" tabindex="0" aria-label="看全文：常见误区">
+                <figure class="lcard__figure">
+                  <img data-slot="sun-05" src="assets/lessons/sun-05.jpg" alt="阴天草地上，戴帽子的小孩站着，云层被光透出一块亮斑" loading="lazy">
+                </figure>
+                <div class="lcard__text">
+                  <p class="lcard__no">05</p>
+                  <h3 class="lcard__title">常见误区</h3>
+                  <p class="lcard__lead">阴天一样有紫外线，云层挡不住。</p>
+                  <div class="lcard__more" id="lesson-sun-05-more" hidden>
+                    <p>❌ "阴天不用防晒"——紫外线能穿透云层，阴天也要防；❌ "在窗户后面就安全"——普通玻璃挡 UVB 但挡不住 UVA；❌ "涂了防晒就可以随便晒"——防晒不是万能的，遮挡和避开高峰更重要；❌ "冬天不用防晒"——紫外线全年都有，雪地反射更强。</p>
+                  </div>
+                  <span class="lcard__open">看全文<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-chev"/></svg></span>
+                </div>
+              </article>
+              <div class="lessonfull__quiz">
+                <span class="chip chip--plain"><svg viewBox="0 0 24 24"><use href="#i-gear"/></svg>小测验 · 3 道题</span>
+                <p>SPF 和 PA 分别代表什么？阴天需要防晒吗？</p>
+                <button class="primary-btn" data-open="quiz" data-quiz="lesson-sun">开始测验</button>
+              </div>
+              <div class="lessonfull__nav">
+                <button class="ghost-btn" data-screen-jump="lesson-eye">← 上一课</button>
+                <button class="primary-btn" data-screen-jump="lesson-talk">下一课 →</button>
+              </div>
+            </article>
+            <div class="scroll__pad"></div>
+          </div>
+        </section>
+
+        <!-- ===================== 二级页 · 课程：怎么和别人说 ===================== -->
+        <section class="screen screen--sub" data-screen="lesson-talk" aria-label="怎么和别人说">
+          <div class="subhead">
+            <button class="backbtn" data-screen-jump="learn" aria-label="返回"><svg viewBox="0 0 24 24"><use href="#i-chev"/></svg></button>
+            <span class="subhead__title">第 4 课 · 怎么和别人说</span>
+          </div>
+          <div class="scroll">
+            <article class="lessonfull">
+              <div class="lessonfull__progress">
+                <span>课程进度</span>
+                <div class="mapbar"><i style="--w:80%"></i></div>
+                <span>4 / 5 节</span>
+              </div>
+              <h2 class="lessonfull__title">怎么跟别人解释白化病？</h2>
+              <p class="lessonfull__meta">5 分钟 · 沟通话术 ·「认识它」系列</p>
+              <article class="lcard lcard--link" data-lcard data-article="lesson-talk#01" role="button" tabindex="0" aria-label="看全文：跟同学怎么说">
+                <figure class="lcard__figure">
+                  <img data-slot="talk-01" src="assets/lessons/talk-01.jpg" alt="学校走廊里两个小孩面对面说话，中间浮着一个对话气泡和一颗星" loading="lazy">
+                </figure>
+                <div class="lcard__text">
+                  <p class="lcard__no">01</p>
+                  <h3 class="lcard__title">跟同学怎么说</h3>
+                  <p class="lcard__lead">一句话就够：「天生的，不传染。」</p>
+                  <div class="lcard__more" id="lesson-talk-01-more" hidden>
+                    <p>"我有白化病，是一种遗传病，皮肤和头发缺少色素，所以比较白。我怕太阳，出门要戴帽子涂防晒。眼睛也不太好，看远处会吃力。但我和你们一样，可以一起学习一起玩。"——简单、直接、不自卑，把"我需要什么"说清楚。</p>
+                  </div>
+                  <span class="lcard__open">看全文<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-chev"/></svg></span>
+                </div>
+              </article>
+              <article class="lcard lcard--link" data-lcard data-article="lesson-talk#02" role="button" tabindex="0" aria-label="看全文：跟老师怎么说">
+                <figure class="lcard__figure">
+                  <img data-slot="talk-02" src="assets/lessons/talk-02.jpg" alt="虚化的教室窗边，老师和一个戴帽子的孩子交谈，两人之间有一束柔和的光" loading="lazy">
+                </figure>
+                <div class="lcard__text">
+                  <p class="lcard__no">02</p>
+                  <h3 class="lcard__title">跟老师怎么说</h3>
+                  <p class="lcard__lead">入学前先说，比被误解后再解释好。</p>
+                  <div class="lcard__more" id="lesson-talk-02-more" hidden>
+                    <p>建议家长出面沟通，重点说三件事：① 座位：尽量靠前、避开窗边直射阳光；② 教材：需要大字版或电子课件，允许用平板放大；③ 户外：体育课允许戴帽子和滤光镜，剧烈阳光下可在阴凉处见习。可以把医生的诊断证明和建议复印给老师。</p>
+                  </div>
+                  <span class="lcard__open">看全文<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-chev"/></svg></span>
+                </div>
+              </article>
+              <article class="lcard lcard--link" data-lcard data-article="lesson-talk#03" role="button" tabindex="0" aria-label="看全文：跟 HR / 面试官怎么说">
+                <figure class="lcard__figure">
+                  <img data-slot="talk-03" src="assets/lessons/talk-03.jpg" alt="浅色桌面上一份空白资料板和一杯水，椅子空着，午后柔光" loading="lazy">
+                </figure>
+                <div class="lcard__text">
+                  <p class="lcard__no">03</p>
+                  <h3 class="lcard__title">跟 HR / 面试官怎么说</h3>
+                  <p class="lcard__lead">说明需要的便利，不必交代全部病史。</p>
+                  <div class="lcard__more" id="lesson-talk-03-more" hidden>
+                    <p>① 不是必须主动说，但如果岗位有户外作业、长时间看屏幕等要求，建议提前沟通；② 重点说"我能做什么"，而不是"我不能做什么"；③ 可以申请合理便利：工位避开阳光、显示器可调节亮度、允许戴滤光镜；④ 白化病不属于传染病，不影响绝大多数办公室工作。</p>
+                  </div>
+                  <span class="lcard__open">看全文<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-chev"/></svg></span>
+                </div>
+              </article>
+              <article class="lcard lcard--link" data-lcard data-article="lesson-talk#04" role="button" tabindex="0" aria-label="看全文：跟陌生人怎么说">
+                <figure class="lcard__figure">
+                  <img data-slot="talk-04" src="assets/lessons/talk-04.jpg" alt="街边，银白头发戴滤光镜的青少年平静地正面站着" loading="lazy">
+                </figure>
+                <div class="lcard__text">
+                  <p class="lcard__no">04</p>
+                  <h3 class="lcard__title">跟陌生人怎么说</h3>
+                  <p class="lcard__lead">你不需要为别人的好奇负责。</p>
+                  <div class="lcard__more" id="lesson-talk-04-more" hidden>
+                    <p>遇到好奇的目光或提问，可以选择：① 简单解释："我有白化病，是一种遗传病，不传染。"② 幽默化解："我是月亮派来的，怕太阳。"③ 不想说时："这是我的个人情况，不太想聊这个。"——你没有义务向每个人解释，保护自己的情绪比满足别人的好奇心更重要。</p>
+                  </div>
+                  <span class="lcard__open">看全文<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-chev"/></svg></span>
+                </div>
+              </article>
+              <article class="lcard lcard--link" data-lcard data-article="lesson-talk#05" role="button" tabindex="0" aria-label="看全文：心态建议">
+                <figure class="lcard__figure">
+                  <img data-slot="talk-05" src="assets/lessons/talk-05.jpg" alt="一大一小两个剪影在天台上并肩看日落，中间浮着一颗星" loading="lazy">
+                </figure>
+                <div class="lcard__text">
+                  <p class="lcard__no">05</p>
+                  <h3 class="lcard__title">心态建议</h3>
+                  <p class="lcard__lead">先允许自己在意，再练习不在意。</p>
+                  <div class="lcard__more" id="lesson-talk-05-more" hidden>
+                    <p>① 被盯着看不是你的错，是对方的不礼貌；② 不用因为别人的无知而生气或自卑，你可以选择"教育"或"忽略"；③ 找到同频的人很重要，月亮岛的社区就是你的后盾；④ 你的价值不由你的外貌决定，你是谁、你做了什么才重要。</p>
+                  </div>
+                  <span class="lcard__open">看全文<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-chev"/></svg></span>
+                </div>
+              </article>
+              <div class="lessonfull__quiz">
+                <span class="chip chip--plain"><svg viewBox="0 0 24 24"><use href="#i-gear"/></svg>小测验 · 3 道题</span>
+                <p>跟老师沟通重点说哪三件事？遇到陌生人好奇提问怎么办？</p>
+                <button class="primary-btn" data-open="quiz" data-quiz="lesson-talk">开始测验</button>
+              </div>
+              <div class="lessonfull__nav">
+                <button class="ghost-btn" data-screen-jump="lesson-sun">← 上一课</button>
+                <button class="primary-btn" data-screen-jump="lesson-family">下一课 →</button>
+              </div>
+            </article>
+            <div class="scroll__pad"></div>
+          </div>
+        </section>
+
+        <!-- ===================== 二级页 · 课程：家属照护指南 ===================== -->
+        <section class="screen screen--sub" data-screen="lesson-family" aria-label="家属照护指南">
+          <div class="subhead">
+            <button class="backbtn" data-screen-jump="learn" aria-label="返回"><svg viewBox="0 0 24 24"><use href="#i-chev"/></svg></button>
+            <span class="subhead__title">第 5 课 · 家属照护</span>
+          </div>
+          <div class="scroll">
+            <article class="lessonfull">
+              <div class="lessonfull__progress">
+                <span>课程进度</span>
+                <div class="mapbar"><i style="--w:100%"></i></div>
+                <span>5 / 5 节</span>
+              </div>
+              <h2 class="lessonfull__title">给守护者的照护指南</h2>
+              <p class="lessonfull__meta">6 分钟 · 给家属朋友 ·「认识它」系列</p>
+              <article class="lcard lcard--link" data-lcard data-article="lesson-family#01" role="button" tabindex="0" aria-label="看全文：先照顾好自己">
+                <figure class="lcard__figure">
+                  <img data-slot="family-01" src="assets/lessons/family-01.jpg" alt="窗边椅子上，一个成年人捧着杯子坐着，粉色的光落在肩上" loading="lazy">
+                </figure>
+                <div class="lcard__text">
+                  <p class="lcard__no">01</p>
+                  <h3 class="lcard__title">先照顾好自己</h3>
+                  <p class="lcard__lead">先照顾好自己，才能稳定地接住孩子。</p>
+                  <div class="lcard__more" id="lesson-family-01-more" hidden>
+                    <p>很多家长的第一反应是自责、焦虑、四处求医。请记住：白化病不是你的错，也不是孩子的错。你需要先接纳这件事，才能给孩子稳定的支持。家长的情绪状态直接影响孩子的自我认同。如果感到压力很大，可以寻求心理咨询或加入家长支持小组。</p>
+                  </div>
+                  <span class="lcard__open">看全文<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-chev"/></svg></span>
+                </div>
+              </article>
+              <article class="lcard lcard--link" data-lcard data-article="lesson-family#02" role="button" tabindex="0" aria-label="看全文：日常照护要点">
+                <figure class="lcard__figure">
+                  <img data-slot="family-02" src="assets/lessons/family-02.jpg" alt="桌面上并排放着宽檐帽、滤光镜、防晒霜和一小盘水果" loading="lazy">
+                </figure>
+                <div class="lcard__text">
+                  <p class="lcard__no">02</p>
+                  <h3 class="lcard__title">日常照护要点</h3>
+                  <p class="lcard__lead">防晒、眼睛、皮肤、营养，四件事。</p>
+                  <div class="lcard__more" id="lesson-family-02-more" hidden>
+                    <p>① 防晒：出门前帮孩子检查帽子、防晒衣、防晒霜是否到位；② 眼睛：定期（每 6–12 个月）带孩子做眼科检查，及时配镜；③ 皮肤：每月自查皮肤有没有异常斑点或痣，每年皮肤科随访；④ 营养：均衡饮食即可，不需要特殊补品，维生素 D 可以在医生指导下补充（因为防晒可能影响合成）。</p>
+                  </div>
+                  <span class="lcard__open">看全文<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-chev"/></svg></span>
+                </div>
+              </article>
+              <article class="lcard lcard--link" data-lcard data-article="lesson-family#03" role="button" tabindex="0" aria-label="看全文：心理支持">
+                <figure class="lcard__figure">
+                  <img data-slot="family-03" src="assets/lessons/family-03.jpg" alt="大人蹲下来与孩子平视，两人之间浮着一个发光的对话气泡" loading="lazy">
+                </figure>
+                <div class="lcard__text">
+                  <p class="lcard__no">03</p>
+                  <h3 class="lcard__title">心理支持</h3>
+                  <p class="lcard__lead">「你和别人不一样，但不代表你不好。」</p>
+                  <div class="lcard__more" id="lesson-family-03-more" hidden>
+                    <p>① 从小帮孩子建立积极的自我认同："你和别人不一样，但这不代表你不好"；② 不要过度保护，让孩子在安全范围内尝试各种活动；③ 鼓励孩子表达感受，被欺负或被嘲笑时认真倾听，不要说"别在意"；④ 帮孩子找到优势领域（音乐、绘画、编程等），建立自信；⑤ 青春期特别关注情绪变化，必要时寻求专业心理支持。</p>
+                  </div>
+                  <span class="lcard__open">看全文<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-chev"/></svg></span>
+                </div>
+              </article>
+              <article class="lcard lcard--link" data-lcard data-article="lesson-family#04" role="button" tabindex="0" aria-label="看全文：学校沟通">
+                <figure class="lcard__figure">
+                  <img data-slot="family-04" src="assets/lessons/family-04.jpg" alt="教室窗边，一位大人与戴帽子的孩子和老师站在一起" loading="lazy">
+                </figure>
+                <div class="lcard__text">
+                  <p class="lcard__no">04</p>
+                  <h3 class="lcard__title">学校沟通</h3>
+                  <p class="lcard__lead">入学前先说清楚，比事后补救好。</p>
+                  <div class="lcard__more" id="lesson-family-04-more" hidden>
+                    <p>① 入学前主动和班主任沟通，提供医生的诊断和建议；② 要求合理便利：靠前座位、避开窗边、大字教材、允许戴帽子和滤光镜；③ 体育课和户外活动提前说明，可在阴凉处见习或做低强度活动；④ 和老师保持定期沟通，了解孩子的适应情况；⑤ 可以建议学校开展一次关于"差异"的班会，帮助其他同学理解。</p>
+                  </div>
+                  <span class="lcard__open">看全文<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-chev"/></svg></span>
+                </div>
+              </article>
+              <article class="lcard lcard--link" data-lcard data-article="lesson-family#05" role="button" tabindex="0" aria-label="看全文：就医与遗传咨询">
+                <figure class="lcard__figure">
+                  <img data-slot="family-05" src="assets/lessons/family-05.jpg" alt="洒满阳光的浅色房间，桌上摊着空白纸张和一小瓶花，两把椅子空着" loading="lazy">
+                </figure>
+                <div class="lcard__text">
+                  <p class="lcard__no">05</p>
+                  <h3 class="lcard__title">就医与遗传咨询</h3>
+                  <p class="lcard__lead">确诊分型、定期随访、遗传咨询。</p>
+                  <div class="lcard__more" id="lesson-family-05-more" hidden>
+                    <p>① 确诊：建议到有遗传科或皮肤科的三甲医院做基因检测，明确分型；② 随访：皮肤科每年 1–2 次，眼科每 6–12 个月；③ 遗传咨询：如果计划生育二胎，建议夫妻双方做携带者筛查，咨询遗传科医生；④ 警惕综合征型：如果有容易淤青、出血不止、反复感染等情况，及时排查 Hermansky-Pudlak 或 Chediak-Higashi 综合征。</p>
+                  </div>
+                  <span class="lcard__open">看全文<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-chev"/></svg></span>
+                </div>
+              </article>
+              <article class="lcard lcard--link" data-lcard data-article="lesson-family#06" role="button" tabindex="0" aria-label="看全文：支持资源">
+                <figure class="lcard__figure">
+                  <img data-slot="family-06" src="assets/lessons/family-06.jpg" alt="一圈大小不一的人形剪影围坐成圆，中间浮着一颗发光的星" loading="lazy">
+                </figure>
+                <div class="lcard__text">
+                  <p class="lcard__no">06</p>
+                  <h3 class="lcard__title">支持资源</h3>
+                  <p class="lcard__lead">公益组织、家长群、康复中心、心理热线。</p>
+                  <div class="lcard__more" id="lesson-family-06-more" hidden>
+                    <p>① 月亮孩子之家（国内白化病公益组织，2008 年成立）：提供信息、交流、倡导；② 各地家长微信群：可以通过公益组织联系本地家长；③ 低视力康复中心：可以申请助视器和康复训练；④ 残疾人证：视力达到标准可以办理，享受相关政策福利；⑤ 心理援助热线：12356（全国心理援助热线）。</p>
+                  </div>
+                  <span class="lcard__open">看全文<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-chev"/></svg></span>
+                </div>
+              </article>
+              <div class="lessonfull__quiz">
+                <span class="chip chip--plain"><svg viewBox="0 0 24 24"><use href="#i-gear"/></svg>小测验 · 3 道题</span>
+                <p>孩子需要多久做一次眼科检查？白化病患者可以生育吗？</p>
+                <button class="primary-btn" data-open="quiz" data-quiz="lesson-family">开始测验</button>
+              </div>
+              <div class="lessonfull__nav">
+                <button class="ghost-btn" data-screen-jump="lesson-talk">← 上一课</button>
+                <button class="primary-btn" data-screen-jump="lesson-detail">谣言粉碎机 →</button>
+              </div>
+            </article>
+            <div class="scroll__pad"></div>
+          </div>
+        </section>
+
+        <!-- ===================== 三级页 · 科普正文 ===================== -->
+        <!-- 26 个课程条目共用这一个模板：图 / 编号 / 标题 / 导语 / 全文由上一条卡片的
+             内容在运行时填进来（正文源就是二级页里那个 hidden 的 .lcard__more）。 -->
+        <section class="screen screen--sub" data-screen="lesson-article" aria-label="科普正文">
+          <div class="subhead">
+            <button class="backbtn" id="article-back" data-screen-jump="learn" aria-label="返回">
+              <svg viewBox="0 0 24 24"><use href="#i-chev"/></svg>
+            </button>
+            <span class="subhead__title" id="article-crumb">正文</span>
+          </div>
+          <div class="scroll">
+            <article class="lessonfull article">
+              <figure class="article__figure" id="article-figure"></figure>
+              <p class="article__no" id="article-no">01</p>
+              <h2 class="lessonfull__title" id="article-title"></h2>
+              <p class="article__lead" id="article-lead"></p>
+              <div class="article__body" id="article-body"></div>
+              <div class="lessonfull__nav">
+                <button class="ghost-btn" id="article-prev">← 上一条</button>
+                <button class="primary-btn" id="article-next">下一条 →</button>
+              </div>
+            </article>
+            <div class="scroll__pad"></div>
+          </div>
+        </section>
+
+        <!-- ===================== 二级页 · 发帖（写下我想说的话） ===================== -->
+        <section class="screen screen--sub" data-screen="compose-post" aria-label="写点什么">
+          <div class="subhead">
+            <button class="backbtn" data-screen-jump="planet" aria-label="返回"><svg viewBox="0 0 24 24"><use href="#i-chev"/></svg></button>
+            <span class="subhead__title">写点什么</span>
+          </div>
+          <div class="scroll">
+            <div class="compose">
+              <div class="compose__tip">
+                <span class="compose__tip-ico">💡</span>
+                <p>这里是打气墙。说一句鼓励自己的话，或者分享一件今天做到的小事。你的话会被其他岛内人看到。</p>
+              </div>
+              <div class="compose__field">
+                <label class="compose__label">标题（可选）</label>
+                <input class="compose__input" type="text" placeholder="给这句话起个名字…" maxlength="30" />
+              </div>
+              <div class="compose__field">
+                <label class="compose__label">正文 <span class="compose__count">0 / 200</span></label>
+                <textarea class="compose__textarea" id="post-text" rows="6" placeholder="今天想对自己说什么？" maxlength="200"></textarea>
+              </div>
+              <div class="compose__options">
+                <div class="compose__option">
+                  <span class="compose__option-label">匿名发布</span>
+                  <button class="switch is-on" id="post-anon" role="switch" aria-checked="true"></button>
+                </div>
+                <div class="compose__option">
+                  <span class="compose__option-label">同步到心情广场</span>
+                  <button class="switch" id="post-to-mood" role="switch" aria-checked="false"></button>
+                </div>
+              </div>
+              <div class="compose__tags">
+                <span class="compose__tag-label">加个标签：</span>
+                <span class="compose__tag">#防晒打卡</span>
+                <span class="compose__tag">#今天做到了</span>
+                <span class="compose__tag">#想对自己说</span>
+                <span class="compose__tag">#月亮宝宝</span>
+              </div>
+              <button class="primary-btn compose__submit" id="post-submit">
+                <svg viewBox="0 0 24 24"><use href="#i-send"/></svg>发布到打气墙
+              </button>
+              <p class="compose__note">发布前请确认内容不包含个人隐私信息。月亮岛不会把你的身份信息展示给任何人。</p>
+            </div>
+            <div class="scroll__pad"></div>
+          </div>
+        </section>
+
+        <!-- ===================== 二级页 · 写心情（匿名写一句） ===================== -->
+        <section class="screen screen--sub" data-screen="compose-mood" aria-label="写心情">
+          <div class="subhead">
+            <button class="backbtn" data-screen-jump="planet" aria-label="返回"><svg viewBox="0 0 24 24"><use href="#i-chev"/></svg></button>
+            <span class="subhead__title">今天的心情</span>
+          </div>
+          <div class="scroll">
+            <div class="compose">
+              <div class="compose__tip compose__tip--mood">
+                <span class="compose__tip-ico">🌙</span>
+                <p>选一轮最像今天的月亮，写一句话。心情广场只有岛内人能看到，完全匿名。</p>
+              </div>
+              <div class="compose__field">
+                <label class="compose__label">今晚的月亮</label>
+                <div class="phases phases--big" id="mood-phases" role="radiogroup" aria-label="选择月相"></div>
+                <p class="compose__phase-label" id="mood-phase-label">上弦月 · 有点亮，也有点没准备好</p>
+              </div>
+              <div class="compose__field">
+                <label class="compose__label">写一句话 <span class="compose__count">0 / 100</span></label>
+                <textarea class="compose__textarea" id="mood-text" rows="4" placeholder="今天想说的一句话…" maxlength="100"></textarea>
+              </div>
+              <div class="compose__options">
+                <div class="compose__option">
+                  <span class="compose__option-label">完全匿名</span>
+                  <button class="switch is-on" id="mood-anon" role="switch" aria-checked="true"></button>
+                </div>
+              </div>
+              <div class="compose__quick">
+                <span class="compose__tag-label">快速写：</span>
+                <span class="compose__tag">今天好累</span>
+                <span class="compose__tag">但我在</span>
+                <span class="compose__tag">想被看见</span>
+                <span class="compose__tag">谢谢自己</span>
+              </div>
+              <button class="primary-btn compose__submit" id="mood-submit">
+                <svg viewBox="0 0 24 24"><use href="#i-moon"/></svg>记下今晚的月亮
+              </button>
+              <p class="compose__note">你的心情只保存在这座岛上。如果很难受，可以拨打心理援助热线 12356。</p>
+            </div>
+            <div class="scroll__pad"></div>
+          </div>
+        </section>
+
+        <!-- ===================== 二级页 · 一条匿名心情（内容由被点的那条填进来） ===================== -->
+        <section class="screen screen--sub" data-screen="mood-detail" aria-label="一条匿名心情">
+          <div class="subhead">
+            <button class="backbtn" data-screen-jump="planet" aria-label="返回"><svg viewBox="0 0 24 24"><use href="#i-chev"/></svg></button>
+            <span class="subhead__title">一条匿名心情</span>
+          </div>
+          <div class="scroll">
+            <article class="moodfull">
+              <div class="moodfull__head">
+                <span class="moodfull__phase" id="mood-detail-phase"></span>
+                <div>
+                  <b id="mood-detail-phase-name">上弦月</b>
+                  <p id="mood-detail-phase-note">有点亮，也有点没准备好</p>
+                </div>
+              </div>
+              <p class="moodfull__text" id="mood-detail-text">今天不想被看见，但想说一句：真的好累。</p>
+              <p class="moodfull__meta" id="mood-detail-meta">2 分钟前 · 匿名 · 仅岛内人可见</p>
+            </article>
+            <div class="notice notice--private">
+              <svg viewBox="0 0 24 24"><use href="#i-lock"/></svg>
+              <p><b>匿名 · 私密</b> · 不显示是谁写的，24 小时后自动沉底；回应同样匿名，没有点赞，也没有比较。</p>
+            </div>
+            <p class="moodfull__hint">这里只有文字，没有名字。你可以回一句，也可以只是看看。</p>
+            <div class="moodfull__row">
+              <button class="ghost-btn" id="mood-detail-read" data-read=""><svg viewBox="0 0 24 24"><use href="#i-play"/></svg>朗读</button>
+              <button class="primary-btn" data-screen-jump="compose-mood"><svg viewBox="0 0 24 24"><use href="#i-moon"/></svg>我也写一句</button>
+            </div>
+            <div class="replyhead"><h3 id="mood-detail-reply-title">2 句匿名回应</h3><span>看不到是谁</span></div>
+            <div class="replylist" id="mood-detail-replies"></div>
+            <div class="scroll__pad"></div>
+          </div>
+          <div class="moodreply">
+            <input class="moodreply__input" id="mood-reply-input" maxlength="40" placeholder="匿名回一句（不显示是谁）" aria-label="匿名回一句">
+            <button class="moodreply__send" id="mood-reply-send" aria-label="发出这句回应"><svg viewBox="0 0 24 24"><use href="#i-send"/></svg></button>
+          </div>
+        </section>
+
+        <!-- ===================== 二级页 · 精选图文（公众号风） ===================== -->
+        <section class="screen screen--sub" data-screen="featured-detail" aria-label="精选文章">
+          <div class="subhead">
+            <button class="backbtn" data-screen-jump="story" aria-label="返回"><svg viewBox="0 0 24 24"><use href="#i-chev"/></svg></button>
+            <span class="subhead__title">精选文章</span>
+          </div>
+          <div class="scroll">
+            <div id="featured-body"></div>
+            <div class="scroll__pad"></div>
+          </div>
+        </section>
+
+        <!-- ===================== 二级页 · 搜索 ===================== -->
+        <section class="screen screen--sub" data-screen="search" aria-label="搜索">
+          <div class="subhead">
+            <button class="backbtn" data-screen-jump="today" aria-label="返回"><svg viewBox="0 0 24 24"><use href="#i-chev"/></svg></button>
+            <span class="subhead__title">搜索</span>
+          </div>
+          <div class="scroll">
+            <div class="searchbox">
+              <svg viewBox="0 0 24 24" class="searchbox__ico"><use href="#i-search"/></svg>
+              <input class="searchbox__input" id="search-input" type="text" placeholder="搜索帖子、故事、科普…" />
+              <button class="searchbox__clear" id="search-clear" aria-label="清除">×</button>
+            </div>
+
+            <div class="search-hot" id="search-hot">
+              <h3 class="search__title">🔥 热门搜索</h3>
+              <div class="search__tags">
+                <span class="search__tag">防晒</span>
+                <span class="search__tag">滤光镜</span>
+                <span class="search__tag">遗传</span>
+                <span class="search__tag">海边</span>
+                <span class="search__tag">开学</span>
+                <span class="search__tag">就业</span>
+                <span class="search__tag">心理</span>
+                <span class="search__tag">家长</span>
+              </div>
+            </div>
+
+            <div class="search-result" id="search-result" style="display:none;">
+              <h3 class="search__title">搜索结果</h3>
+              <div class="search__group">
+                <span class="search__grouplabel">💬 帖子</span>
+                <div class="search__item" data-screen-jump="post-detail">
+                  <b>今天第一次戴着帽子去了海边</b>
+                  <p>来自 云层以上 · 打气墙</p>
+                </div>
+                <div class="search__item" data-screen-jump="post-detail">
+                  <b>复诊结果一切正常，这次没有哭</b>
+                  <p>来自 小夜灯 · 打气墙</p>
+                </div>
+              </div>
+              <div class="search__group">
+                <span class="search__grouplabel">🎧 故事</span>
+                <div class="search__item" data-screen-jump="story-detail">
+                  <b>我把教室的窗帘换成了遮光的</b>
+                  <p>17 岁 · 高二 · 4 分 12 秒</p>
+                </div>
+              </div>
+              <div class="search__group">
+                <span class="search__grouplabel">📚 科普</span>
+                <div class="search__item" data-screen-jump="lesson-sun">
+                  <b>日常防晒</b>
+                  <p>SPF、衣物与时间段</p>
+                </div>
+                <div class="search__item" data-screen-jump="lesson-eye">
+                  <b>眼睛与视力</b>
+                  <p>畏光、眼球震颤、低视力</p>
+                </div>
+              </div>
+            </div>
+            <div class="scroll__pad"></div>
+          </div>
+        </section>
+
+      </main>
+
+      <!-- 底部标签栏 -->
+      <nav class="tabbar" id="tabbar" aria-label="主导航">
+        <button class="tab is-active" data-screen-target="today"><svg viewBox="0 0 24 24"><use href="#i-home"/></svg><span>今日</span></button>
+        <button class="tab" data-screen-target="planet"><svg viewBox="0 0 24 24"><use href="#i-planet"/></svg><span>星球</span></button>
+        <button class="tab" data-screen-target="story"><svg viewBox="0 0 24 24"><use href="#i-story"/></svg><span>故事</span></button>
+        <button class="tab" data-screen-target="learn"><svg viewBox="0 0 24 24"><use href="#i-learn"/></svg><span>科普</span></button>
+        <button class="tab" data-screen-target="mine"><svg viewBox="0 0 24 24"><use href="#i-mine"/></svg><span>我的</span></button>
+      </nav>
+
+      <!-- 儿童版标签栏 -->
+      <nav class="tabbar tabbar--child" id="tabbar-child" aria-label="儿童版导航">
+        <button class="tab is-active" data-child-target="child"><svg viewBox="0 0 24 24"><use href="#i-moon"/></svg><span>今日</span></button>
+        <button class="tab" data-child-target="child-story"><svg viewBox="0 0 24 24"><use href="#i-play"/></svg><span>故事</span></button>
+        <button class="tab" data-child-target="child-guardian"><svg viewBox="0 0 24 24"><use href="#i-shield"/></svg><span>家长</span></button>
+      </nav>
+    </div>
+
+    <!-- ============ 浮层 ============ -->
+    <div class="sheet-layer" id="sheet-layer">
+
+      <!-- 月相打卡 -->
+      <div class="sheet" data-sheet="moon">
+        <div class="sheet__grab"></div>
+        <div class="sheet__head"><h2>今晚的月亮</h2><button class="closebtn" data-close aria-label="关闭">×</button></div>
+        <p class="sheet__sub">选一个最像今天的月亮。不想说，也可以只留一轮新月。</p>
+        <div class="phases phases--big" id="sheet-phases" role="radiogroup" aria-label="选择月相"></div>
+        <p class="phase-label" id="phase-label">上弦月 · 有点亮，也有点没准备好</p>
+        <textarea class="ta" id="moon-note" rows="3" placeholder="想留一句话吗？（可以跳过）"></textarea>
+        <div class="sheet__row">
+          <button class="ghost-btn" data-read="今天的月亮，我已经选好了。"><svg viewBox="0 0 24 24"><use href="#i-mic"/></svg>语音记录</button>
+          <button class="primary-btn" id="save-moon">记下今晚</button>
+        </div>
+      </div>
+
+      <!-- 紫外线详情 -->
+      <div class="sheet" data-sheet="uv">
+        <div class="sheet__grab"></div>
+        <div class="sheet__head"><h2>今天的光</h2><button class="closebtn" data-close aria-label="关闭">×</button></div>
+        <div class="uvmeter">
+          <div class="uvmeter__num">8.2<span>极强</span></div>
+          <div class="uvmeter__bar"><i style="--w:82%"></i></div>
+          <div class="uvmeter__scale"><span>低</span><span>中</span><span>高</span><span>极强</span></div>
+        </div>
+        <ul class="checklist">
+          <li class="is-done"><span class="tick"><svg viewBox="0 0 24 24"><use href="#i-check"/></svg></span>防晒霜 SPF50+ / PA++++，出门前 15 分钟</li>
+          <li class="is-done"><span class="tick"><svg viewBox="0 0 24 24"><use href="#i-check"/></svg></span>宽檐帽 + 长袖，优先"挡住"而不是"涂上"</li>
+          <li><span class="tick"></span>滤光镜：不是普通墨镜，要能滤紫外线</li>
+          <li><span class="tick"></span>每 2 小时补涂一次，出汗后要重涂</li>
+        </ul>
+        <p class="sheet__tip">小提示：天气预报里的紫外线指数到了 6 以上，就要按"极强"来准备。这里的建议是通用常识，具体方案请听皮肤科医生的。</p>
+      </div>
+
+      <!-- 月球兔小屋 -->
+      <div class="sheet" data-sheet="room">
+        <div class="sheet__grab"></div>
+        <div class="sheet__head"><h2>月球兔小屋</h2><button class="closebtn" data-close aria-label="关闭">×</button></div>
+        <div class="roomscene">
+          <img class="rabbit rabbit--xl" src="assets/moon-rabbit.svg" alt="月球兔在小屋里">
+          <div class="roomscene__floor"></div>
+        </div>
+        <p class="sheet__sub">兔兔的小屋在你的每一次到访里慢慢长大。断掉的那些晚上，屋子不会变旧，只会少亮一盏灯。</p>
+        <div class="shop">
+          <div class="shop__item is-owned"><span>🪟</span><b>一扇向阳窗</b><small>已拥有</small></div>
+          <div class="shop__item"><span>🕯️</span><b>月亮小灯</b><small>20 颗星</small></div>
+          <div class="shop__item"><span>🧣</span><b>薄纱披风</b><small>35 颗星</small></div>
+        </div>
+      </div>
+
+      <!-- 无障碍乐园 -->
+      <div class="sheet" data-sheet="a11y">
+        <div class="sheet__grab"></div>
+        <div class="sheet__head"><h2>无障碍乐园</h2><button class="closebtn" data-close aria-label="关闭">×</button></div>
+        <p class="sheet__sub">这里的每一项都真的会改变界面，不是装饰。你可以随时调回来。</p>
+
+        <div class="setting">
+          <div class="setting__label"><b>星空强度</b><small>决定背景有多少光和动</small></div>
+          <div class="choice" data-choice="intensity">
+            <button data-value="calm">静夜<small>几乎不动</small></button>
+            <button data-value="glow" class="is-on">微光<small>慢慢呼吸</small></button>
+            <button data-value="meteor">流星<small>偶有流星</small></button>
+          </div>
+        </div>
+        <div class="setting">
+          <div class="setting__label"><b>字号</b><small>正文最小 16sp，可放大</small></div>
+          <div class="choice" data-choice="font">
+            <button data-value="1" class="is-on">标准</button>
+            <button data-value="1.12">大</button>
+            <button data-value="1.25">特大</button>
+          </div>
+        </div>
+        <div class="setting setting--row">
+          <div class="setting__label"><b>增强对比度</b><small>文字更实、边框更清楚</small></div>
+          <button class="switch" data-toggle="contrast" role="switch" aria-checked="false"></button>
+        </div>
+        <div class="setting setting--row">
+          <div class="setting__label"><b>点读朗读</b><small>点击文字自动读出来</small></div>
+          <button class="switch" data-toggle="read" role="switch" aria-checked="false"></button>
+        </div>
+        <div class="setting setting--row">
+          <div class="setting__label"><b>减少动效</b><small>关闭所有位移与闪烁</small></div>
+          <button class="switch" data-toggle="motion" role="switch" aria-checked="false"></button>
+        </div>
+      </div>
+
+      <!-- 隐私 -->
+      <div class="sheet" data-sheet="privacy">
+        <div class="sheet__grab"></div>
+        <div class="sheet__head"><h2>设置 · 隐私 · 身份</h2><button class="closebtn" data-close aria-label="关闭">×</button></div>
+        <div class="rowitem rowitem--static"><span class="avatar">18</span><div><b>少年岛民</b><p>已通过年龄确认 · 内容默认仅好友可见</p></div></div>
+        <div class="rowitem rowitem--static"><span class="avatar avatar--ghost"><svg viewBox="0 0 24 24"><use href="#i-lock"/></svg></span><div><b>照片默认不上传</b><p>头像使用插画，露出皮肤的照片需要二次确认</p></div></div>
+        <div class="rowitem rowitem--static"><span class="avatar avatar--ghost"><svg viewBox="0 0 24 24"><use href="#i-shield"/></svg></span><div><b>陌生人私信已关闭</b><p>只有守护者和主持房间的志愿者能主动联系你</p></div></div>
+        <p class="sheet__tip">如果你正在经历很难受的时刻，这里随时可以拨通心理援助热线：<b>12356</b>（全国心理援助热线）。</p>
+      </div>
+
+      <!-- 身份与版本 -->
+      <div class="sheet" data-sheet="identity">
+        <div class="sheet__grab"></div>
+        <div class="sheet__head"><h2>你在月亮岛的哪一边？</h2><button class="closebtn" data-close aria-label="关闭">×</button></div>
+        <p class="sheet__sub">这不是权限高低，是两种完全不同的来意。随时随地都能换。</p>
+
+        <button class="identitycard" data-role-value="insider">
+          <span class="identitycard__ico"><svg viewBox="0 0 24 24"><use href="#i-moon"/></svg></span>
+          <span class="identitycard__body">
+            <b>岛内人</b>
+            <small>我或我的孩子有白化病。这里是我的岛。</small>
+          </span>
+          <span class="identitycard__tick"><svg viewBox="0 0 24 24"><use href="#i-check"/></svg></span>
+        </button>
+        <button class="identitycard" data-role-value="visitor">
+          <span class="identitycard__ico"><svg viewBox="0 0 24 24"><use href="#i-island"/></svg></span>
+          <span class="identitycard__body">
+            <b>岛外人</b>
+            <small>我是来了解的。同学、老师、朋友，或者只是刚好路过。</small>
+          </span>
+          <span class="identitycard__tick"><svg viewBox="0 0 24 24"><use href="#i-check"/></svg></span>
+        </button>
+
+        <div class="setting" style="margin-top:8px">
+          <div class="setting__label"><b>版本</b><small>两边的界面密度和语气不一样</small></div>
+          <div class="choice" data-choice="mode">
+            <button data-value="teen">青少年版<small>13–18 岁</small></button>
+            <button data-value="child">儿童版<small>6–12 岁 + 家长</small></button>
+          </div>
+        </div>
+        <p class="sheet__tip">岛外人能看科普、打气墙、故事和夜谈室；看不到心情广场，也看不到任何人的身份信息。走完 9 课并答对测验，可以拿到守护者徽章。</p>
+      </div>
+
+      <!-- 认知地图 / 测验 -->
+      <div class="sheet" data-sheet="quiz">
+        <div class="sheet__grab"></div>
+        <div class="sheet__head"><h2 id="quiz-title">第 5 课 · 常见误解</h2><button class="closebtn" data-close aria-label="关闭">×</button></div>
+        <p class="sheet__sub">三道题。答错没有惩罚，会告诉你是哪一句被说反了。</p>
+        <div class="quiz" id="quiz"></div>
+        <div class="quizdone" id="quizdone">
+          <span class="quizdone__badge"><svg viewBox="0 0 24 24"><use href="#i-badge"/></svg></span>
+          <h3 id="quizdone-title">你拿到了守护者徽章</h3>
+          <p id="quizdone-text">现在你可以申请进入夜谈室做志愿者，也可以在打气墙发帖了。徽章不代表你懂他们，只代表你愿意先听。</p>
+        </div>
+      </div>
+
+      <!-- 设计说明 -->
+      <div class="sheet sheet--full" data-sheet="help">
+        <div class="sheet__head sheet__head--full">
+          <h2>设计说明</h2>
+          <button class="closebtn" data-close aria-label="关闭">×</button>
+        </div>
+        <div class="doc" id="doc"></div>
+      </div>
+
+      <!-- 夜谈室 · 房间守则 -->
+      <div class="sheet" data-sheet="room-rules">
+        <div class="sheet__grab"></div>
+        <div class="sheet__head"><h2>📜 夜谈室房间守则</h2><button class="closebtn" data-close aria-label="关闭">×</button></div>
+        <p class="sheet__sub">这些守则是为了让每一个进来的人都感到安全。违反守则会被主持人请出房间。</p>
+        <ul class="rules-list">
+          <li><span class="rules__no">01</span><div><b>不追问真实身份</b><p>不问真实姓名、学校、住址、照片。这里的身份就是你的月亮名。</p></div></li>
+          <li><span class="rules__no">02</span><div><b>不 1v1 私聊</b><p>所有对话在房间里公开进行。不私下加联系方式，保护未成年人。</p></div></li>
+          <li><span class="rules__no">03</span><div><b>不评判、不说教</b><p>这里不是课堂，不评价别人的选择。"你应该..."这类话请留在门外。</p></div></li>
+          <li><span class="rules__no">04</span><div><b>不传播医疗建议</b><p>不推荐具体药物、治疗方案。就医请去正规医院，听皮肤科和眼科医生的。</p></div></li>
+          <li><span class="rules__no">05</span><div><b>不透露他人隐私</b><p>房间里听到的内容，不截图、不转发、不在别的地方提起。</p></div></li>
+          <li><span class="rules__no">06</span><div><b>尊重沉默</b><p>有人只想听不想说，这完全可以。不追问、不催促"你怎么不说话"。</p></div></li>
+          <li><span class="rules__no">07</span><div><b>遇到难受可以说</b><p>如果某句话让你不舒服，可以直接说"我想跳过这个话题"，主持人会介入。</p></div></li>
+          <li><span class="rules__no">08</span><div><b>危机时求助</b><p>如果你正在经历很难受的时刻，可以拨打心理援助热线 12356，或告诉主持人。</p></div></li>
+        </ul>
+        <p class="sheet__tip">守则不是限制，是保护。每一条都是以前的岛民用不舒服的经历换来的。</p>
+      </div>
+
+      <!-- 消息通知 -->
+      <div class="sheet" data-sheet="notify">
+        <div class="sheet__grab"></div>
+        <div class="sheet__head">
+          <h2><svg viewBox="0 0 24 24" class="sheet__head-ico"><use href="#i-bell"/></svg>消息通知</h2>
+          <button class="closebtn" data-close aria-label="关闭">×</button>
+        </div>
+        <div class="notify-tabs">
+          <button class="notify-tab is-active">全部</button>
+          <button class="notify-tab">回复</button>
+          <button class="notify-tab">点赞</button>
+          <button class="notify-tab">系统</button>
+        </div>
+        <div class="notifylist">
+          <div class="notify notify--unread">
+            <span class="notify__ico notify__ico--reply"><svg viewBox="0 0 24 24"><use href="#i-moon-chat"/></svg></span>
+            <div class="notify__body">
+              <p><b>小夜灯</b> 回复了你的帖子："海边！我一直不敢去，怕晒。"</p>
+              <span>2 分钟前</span>
+            </div>
+          </div>
+          <div class="notify notify--unread">
+            <span class="notify__ico notify__ico--like"><svg viewBox="0 0 24 24"><use href="#i-star"/></svg></span>
+            <div class="notify__body">
+              <p><b>半格光</b> 等 3 人送给你的帖子 128 颗星</p>
+              <span>15 分钟前</span>
+            </div>
+          </div>
+          <div class="notify notify--unread">
+            <span class="notify__ico notify__ico--system"><svg viewBox="0 0 24 24"><use href="#i-badge"/></svg></span>
+            <div class="notify__body">
+              <p>恭喜你解锁「防晒达人」徽章！连续打卡 7 天</p>
+              <span>1 小时前</span>
+            </div>
+          </div>
+          <div class="notify">
+            <span class="notify__ico notify__ico--reply"><svg viewBox="0 0 24 24"><use href="#i-moon-chat"/></svg></span>
+            <div class="notify__body">
+              <p><b>月光碎片</b> 回复了你的帖子："我去年也去了，一开始很紧张"</p>
+              <span>昨天</span>
+            </div>
+          </div>
+          <div class="notify">
+            <span class="notify__ico notify__ico--sun"><svg viewBox="0 0 24 24"><use href="#i-uv"/></svg></span>
+            <div class="notify__body">
+              <p>今日紫外线极强（8.2），记得涂防晒戴帽子哦</p>
+              <span>昨天 08:00</span>
+            </div>
+          </div>
+          <div class="notify">
+            <span class="notify__ico notify__ico--like"><svg viewBox="0 0 24 24"><use href="#i-star"/></svg></span>
+            <div class="notify__body">
+              <p><b>云层以上</b> 点赞了你的心情记录</p>
+              <span>3 天前</span>
+            </div>
+          </div>
+        </div>
+        <p class="sheet__tip">只有岛内人能看到你的身份信息。通知可以在设置里关闭。</p>
+      </div>
+
+      <!-- 通用内容浮层（科普 / 星球详情） -->
+      <div class="sheet" data-sheet="info">
+        <div class="sheet__grab"></div>
+        <div class="sheet__head"><h2 id="info-title">标题</h2><button class="closebtn" data-close aria-label="关闭">×</button></div>
+        <div class="info-body" id="info-body"></div>
+      </div>
+
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </div>
+
+  <p class="caption">月亮岛 · 高保真交互原型 &nbsp;|&nbsp; 点击卡片、标签、开关都可以操作 &nbsp;|&nbsp; 右上角 ⓘ 看设计说明</p>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
